@@ -1,0 +1,24 @@
+﻿# Datos crudos descargados (>500 MB — no subir a GitHub)
+data/clean/_raw_extracted/
+data/clean/*.csv
+data/clean/*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+# Archivos temporales
+*.log
+*.aux
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+*.toc
+
+# OS
+.DS_Store
+Thumbs.db

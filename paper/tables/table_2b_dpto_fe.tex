@@ -1,0 +1,21 @@
+\begin{threeparttable}
+\begin{tabular}{l c}
+\toprule
+\multicolumn{2}{c}{\textit{RDD Estimates with Department Fixed Effects}} \\
+\midrule
+  & TIENE\_BILLETERA \\
+\midrule
+\addlinespace
+\multicolumn{2}{l}{\textit{EP\_DPTO\_fe}} \\
+  Estimate & 0.0163 \\
+  SE (robust) & (0.0126) \\
+  95\% CI & [-0.0084, 0.0410] \\
+  N / BW & 2{,}891 / 34.76 \\
+  Method & statsmodels\_WLS \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notes:} Specifications include department (DPTO) fixed effects as covariates. Department fixed effects absorb regional variation in digital infrastructure (Suhrcke et al.\ 2024). rdrobust fallback to WLS when numerical issues arise.
+\end{tablenotes}
+\end{threeparttable}

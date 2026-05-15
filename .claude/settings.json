@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\Users\\Usuario\\OneDrive\\Escritorio\\pension-65-digital-wallet-main\\paper"
+    ],
+    "allow": [
+      "PowerShell(winget install Git.Git --silent --accept-package-agreements --accept-source-agreements)"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+\begin{threeparttable}
+\begin{tabular}{l cc}
+\toprule
+\multicolumn{3}{c}{\textit{Heterogeneity Analysis}} \\
+\midrule
+  & TIENE\_BILLETERA & USA\_BILLETERA \\
+\midrule
+\addlinespace
+\multicolumn{3}{l}{\textit{EP\_het\_baseline}} \\
+  Estimate & 0.0272 & 0.0000 \\
+  SE (robust) & (0.0218) & (0.0008) \\
+  95\% CI & [-0.0139, 0.0717] & [-0.0030, -0.0001] \\
+  N / BW & 1{,}144 / 13.95 & 663 / 7.64 \\
+  Method & rdrobust & rdrobust \\
+\addlinespace
+\multicolumn{3}{l}{\textit{MAIN\_het\_AREA\_urbano}} \\
+  Estimate & -0.0178 & --- \\
+  SE (robust) & (0.0359) & --- \\
+  95\% CI & [-0.1027, 0.0380] & --- \\
+  N / BW & 8{,}800 / 12.10 & --- \\
+  Method & rdrobust & --- \\
+\addlinespace
+\multicolumn{3}{l}{\textit{MAIN\_het\_AREA\_rural}} \\
+  Estimate & 0.0080 & --- \\
+  SE (robust) & (0.0195) & --- \\
+  95\% CI & [-0.0223, 0.0541] & --- \\
+  N / BW & 11{,}211 / 11.76 & --- \\
+  Method & rdrobust & --- \\
+\addlinespace
+\multicolumn{3}{l}{\textit{EP\_descriptivo}} \\
+  Estimate & 0.0272 & 0.0000 \\
+  SE (robust) & (0.0218) & (0.0008) \\
+  95\% CI & [-0.0139, 0.0717] & [-0.0030, -0.0001] \\
+  N / BW & 1{,}144 / 13.95 & 663 / 7.64 \\
+  Method & rdrobust & rdrobust \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notes:} Panel A (EP\_het\_): extreme-poor subsample (POBREZA$=1$). Panel B (MAIN\_het\_AREA\_): full sample split by urban/rural. Panel C (EP\_descriptivo): extreme-poor baseline for reference. \textit{low\_power} flag indicates N$<$200 on either side of the cutoff. Urban--rural digital gap documented in BCRP (2024) and BIS WP 1200 (2024).
+\end{tablenotes}
+\end{threeparttable}
