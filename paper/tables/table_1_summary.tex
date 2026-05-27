@@ -1,0 +1,23 @@
+\begin{threeparttable}
+\begin{tabular}{l cccc cccc}
+\toprule
+& \multicolumn{4}{c}{Above Threshold (Treated)} & \multicolumn{4}{c}{Below Threshold (Control)} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+Variable & Mean & SD & N & --- & Mean & SD & N & --- \\
+\midrule
+  TIENE\_BILLETERA & 0.0786 & 0.2691 & 14088 & --- & 0.2217 & 0.4154 & 99667 & --- \\
+  USA\_BILLETERA & 0.0319 & 0.1757 & 14088 & --- & 0.1794 & 0.3837 & 99667 & --- \\
+  INTERNET\_HOGAR & 0.4174 & 0.4932 & 14088 & --- & 0.4641 & 0.4987 & 99667 & --- \\
+  SMARTPHONE & 0.8308 & 0.3749 & 14088 & --- & 0.8695 & 0.3369 & 99667 & --- \\
+  POBREZA & 2.7375 & 0.5488 & 14088 & --- & 2.6814 & 0.5802 & 99667 & --- \\
+  INGRESO\_PC & 13454.4487 & 13062.9359 & 14088 & --- & 11416.5063 & 11201.2608 & 99667 & --- \\
+  NIVEL\_EDUCATIVO & 4.3875 & 3.4343 & 13793 & --- & 5.4505 & 3.8990 & 92826 & --- \\
+\midrule
+  Observations & \multicolumn{4}{c}{14088} & \multicolumn{4}{c}{99667} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notes:} Summary statistics for the full RDD analysis sample. 'Above Threshold' (treated$=1$) denotes individuals aged 65 and above; 'Below Threshold' (treated$=0$) under age 65. The treated/control split (14{,}088 vs.\ 99{,}667) is asymmetric; within the bandwidth-restricted estimation window ($\pm h^{\ast}\!=\!\pm 14.24$ years) the split is 17{,}047 below and 10{,}762 above the cutoff. '---' indicates unavailable data.
+\end{tablenotes}
+\end{threeparttable}

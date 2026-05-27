@@ -1,0 +1,40 @@
+% ============================================================
+% Tabla comparativa RDD1 vs. RDD2
+% ENAHO 2024. rdrobust, kernel triangular, HC robust SE.
+% Generada automaticamente por generar_tabla_comparativa.py
+% ============================================================
+\begin{table}[htbp]
+  \centering
+  \caption{Comparative RDD Estimates: Sharp Age Cutoff (RDD1) vs.\ Proxy SISFOH Welfare Index (RDD2)}
+  \label{tab:rdd_comparativa}
+  \small
+  \begin{tabular}{l cc cc}
+    \toprule
+    & \multicolumn{2}{c}{\textbf{RDD1: Sharp (Age $\geq 65$)}} & \multicolumn{2}{c}{\textbf{RDD2: SISFOH Proxy Index}} \\
+    \cmidrule(lr){2-3}\cmidrule(lr){4-5}
+    & \textit{Tiene Billetera} & \textit{Usa Billetera} & \textit{Tiene Billetera} & \textit{Usa Billetera} \\
+    \midrule
+    \textbf{Estimate} & +0.0006 & +0.0015 & -0.0300* & -0.0057 \\
+    Robust SE & (0.0187) & (0.0180) & (0.0171) & (0.0037) \\
+    95\% CI & [-0.0361,\ 0.0373] & [-0.0337,\ 0.0367] & [-0.0636,\ 0.0035] & [-0.0130,\ 0.0016] \\
+    \addlinespace
+    Bandwidth ($h$) & 18.04 yrs & 17.29 yrs & 1.351 SD & 0.806 SD \\
+    $N_{\mathrm{eff}}$ & $35{,}006$ & $33{,}267$ & $4{,}606$ & $2{,}775$ \\
+    \midrule
+    \multicolumn{5}{l}{\textit{Design details}} \\
+    Running variable & \multicolumn{2}{c}{Age (years), $c = 65$} & \multicolumn{2}{c}{SISFOH proxy index, $c = 1.668$} \\
+    Sample & \multicolumn{2}{c}{Full ENAHO 2024 ($N=113{,}755$)} & \multicolumn{2}{c}{Adults $\geq 65$ ($N=14{,}088$)} \\
+    PCA variables & \multicolumn{2}{c}{---} & \multicolumn{2}{c}{10 (F\&P 2001 + durables)} \\
+    PC1 var.\ explained & \multicolumn{2}{c}{---} & \multicolumn{2}{c}{31.4\%} \\
+    Estimator & \multicolumn{4}{c}{\texttt{rdrobust}, triangular kernel, MSE-optimal $h$, HC robust SE} \\
+    \bottomrule
+  \end{tabular}
+  \begin{minipage}{\linewidth}
+    \smallskip\footnotesize
+    \textit{Notes:} Robust standard errors in parentheses.
+    *** $p<0.01$, ** $p<0.05$, * $p<0.10$.
+    RDD1 uses the full ENAHO 2024 sample; the running variable is age in years centered at 65 (ITT of crossing the Pens\'ion~65 eligibility threshold).
+    RDD2 restricts to adults $\geq 65$ and uses a proxy SISFOH welfare index constructed via PCA on 10 predetermined housing and durable-goods variables from ENAHO 2024 (modules 01 and 18); the index is standardized and centered at the cutoff separating the estimated extreme-poor from the non-extreme-poor.
+    Bandwidth units: years (RDD1) and standard deviations of the proxy index (RDD2). Source: ENAHO 2024 microdata (INEI).
+  \end{minipage}
+\end{table}

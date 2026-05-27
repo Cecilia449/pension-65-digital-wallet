@@ -1,0 +1,17 @@
+variable_canonica,estado,alias_encontrado,modulo,filmer_pritchett,descripcion
+PARED,✓ EXISTE,P102,m01_vivienda,True,Material predominante de paredes exteriores
+PISO,✓ EXISTE,P103,m01_vivienda,True,Material predominante de pisos
+CUARTOS,✓ EXISTE,P104,m01_vivienda,True,Número de habitaciones del hogar (para hacinamiento)
+ABASTAGUADOM,✓ EXISTE,P110,m01_vivienda,True,Abastecimiento de agua en el hogar
+SERVSANIT,✗ NO ENCONTRADA,—,m01_vivienda,True,Servicio sanitario / desagüe
+ALUMBRADO,✗ NO ENCONTRADA,—,m01_vivienda,True,Alumbrado del hogar
+COMBUSTIBLE,✗ NO ENCONTRADA,—,m01_vivienda,False,Combustible para cocinar
+INTERNET_HOGAR,✓ EXISTE,P114B2,m01_vivienda,False,Acceso a internet en el hogar
+SMARTPHONE,✗ NO,—,m18_equipamiento,False,Tenencia de smartphone (P612N=10)
+REFRIGERADOR,✓ EXISTE,P612N=4,m18_equipamiento,False,Tenencia de refrigeradora (P612N=4)
+TIENE_TV,✓ EXISTE,P612N=2,m18_equipamiento,False,Tenencia de televisor (P612N=2)
+LAVADORA,✓ EXISTE,P612N=5,m18_equipamiento,False,Tenencia de lavadora (P612N=5)
+COMPUTADORA,✗ NO,—,m18_equipamiento,False,Tenencia de computadora/laptop (P612N=3 o 9)
+INGRESO_PC,✓ EXISTE,INGHOG2D,sumaria,True,Ingreso per cápita del hogar
+MIEPERHO,✓ EXISTE,MIEPERHO,sumaria,False,Número de miembros del hogar
+POBREZA,✓ EXISTE,POBREZA,sumaria,False,Clasificación de pobreza monetaria INEI

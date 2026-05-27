@@ -1,0 +1,28 @@
+\begin{threeparttable}
+\begin{tabular}{l cc}
+\toprule
+\multicolumn{3}{c}{\textit{RDD2: SISFOH Welfare Index as Running Variable (Adults 65+, following Bando, Galiani and Gertler 2020)}} \\
+\midrule
+  & TIENE\_BILLETERA & USA\_BILLETERA \\
+\midrule
+\addlinespace
+\multicolumn{3}{l}{\textit{RDD2\_SISFOH\_baseline}} \\
+  Estimate & 0.0042 & -0.0111 \\
+  SE (robust) & (0.0149) & (0.0076) \\
+  95\% CI & [-0.0256, 0.0328] & [-0.0282, 0.0015] \\
+  N / BW & 3{,}201 / 0.77 & 2{,}286 / 0.55 \\
+  Method & rdrobust & rdrobust \\
+\addlinespace
+\multicolumn{3}{l}{\textit{RDD2\_SISFOH\_covariates}} \\
+  Estimate & 0.0035 & -0.0118 \\
+  SE (robust) & (0.0154) & (0.0075) \\
+  95\% CI & [-0.0295, 0.0308] & [-0.0291, 0.0003] \\
+  N / BW & 2{,}941 / 0.71 & 2{,}261 / 0.56 \\
+  Method & rdrobust & rdrobust \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notes:} Running variable is a PCA-based proxy of the SISFOH welfare index constructed from ENAHO household characteristics (walls, floors, water, sanitation, electricity, smartphone, refrigerator, TV, per-capita income, overcrowding). Cutoff defined at the estimated threshold separating extreme-poor from non-extreme-poor households among adults aged 65 and above. This design replicates the identification strategy of Bando, Galiani and Gertler (2020) applied to digital wallet adoption as outcome.
+\end{tablenotes}
+\end{threeparttable}

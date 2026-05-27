@@ -1,0 +1,618 @@
+======================================================================
+EXPLORACIÓN DE VARIABLES ENAHO 2024 — PROXY SISFOH
+======================================================================
+
+────────────────────────────────────────────────────────────
+MÓDULO: M01_VIVIENDA (Enaho01-2024-100.csv)
+  Filas (muestra): 5 | Columnas: 338
+  Columnas disponibles:
+    ALTITUD
+    AÑO
+    CODCCPP
+    CONGLOME
+    D105B
+    D106
+    D107D1
+    D107D2
+    D107D3
+    D107D4
+    D1172$01
+    D1172$02
+    D1172$04
+    D1172$05
+    D1172$06
+    D1172$07
+    D1172$08
+    D1172$09
+    D1172$10
+    D1172$11
+    D1172$12
+    D1172$13
+    D1172$14
+    D1172$15
+    D1172$16
+    D1172$17
+    D1173$01
+    D1173$02
+    D1173$04
+    D1173$05
+    D1173$06
+    D1173$07
+    D1173$08
+    D1173$09
+    D1173$10
+    D1173$11
+    D1173$12
+    D1173$13
+    D1173$14
+    D1173$15
+    D1173$16
+    D1173$17
+    D1174$01
+    D1174$02
+    D1174$04
+    D1174$05
+    D1174$06
+    D1174$07
+    D1174$08
+    D1174$09
+    D1174$10
+    D1174$11
+    D1174$12
+    D1174$13
+    D1174$14
+    D1174$15
+    D1174$16
+    D1174$17
+    D612I11
+    D612I22
+    DOMINIO
+    ESTRATO
+    FACTOR07
+    FECENT
+    HOGAR
+    I105B
+    I106
+    I1172$01
+    I1172$02
+    I1172$04
+    I1172$05
+    I1172$06
+    I1172$07
+    I1172$08
+    I1172$09
+    I1172$10
+    I1172$11
+    I1172$12
+    I1172$13
+    I1172$14
+    I1172$15
+    I1172$16
+    I1172$17
+    I1173$01
+    I1173$02
+    I1173$04
+    I1173$05
+    I1173$06
+    I1173$07
+    I1173$08
+    I1173$09
+    I1173$10
+    I1173$11
+    I1173$12
+    I1173$13
+    I1173$14
+    I1173$15
+    I1173$16
+    I1173$17
+    I1174$01
+    I1174$02
+    I1174$04
+    I1174$05
+    I1174$06
+    I1174$07
+    I1174$08
+    I1174$09
+    I1174$10
+    I1174$11
+    I1174$12
+    I1174$13
+    I1174$14
+    I1174$15
+    I1174$16
+    I1174$17
+    LATITUD
+    LONGITUD
+    MES
+    NBI1
+    NBI2
+    NBI3
+    NBI4
+    NBI5
+    NCONGLOME
+    NOMCCPP
+    P101
+    P102
+    P103
+    P103A
+    P104
+    P104A
+    P104B1
+    P104B2
+    P105A
+    P105B
+    P106
+    P106A
+    P106B
+    P107B1
+    P107B2
+    P107B3
+    P107B4
+    P107C11
+    P107C110
+    P107C12
+    P107C13
+    P107C14
+    P107C16
+    P107C17
+    P107C18
+    P107C19
+    P107C21
+    P107C210
+    P107C22
+    P107C23
+    P107C24
+    P107C26
+    P107C27
+    P107C28
+    P107C29
+    P107C31
+    P107C310
+    P107C32
+    P107C33
+    P107C34
+    P107C36
+    P107C37
+    P107C38
+    P107C39
+    P107C41
+    P107C410
+    P107C42
+    P107C43
+    P107C44
+    P107C46
+    P107C47
+    P107C48
+    P107C49
+    P107D1
+    P107D2
+    P107D3
+    P107D4
+    P107E
+    P110
+    P110A
+    P110A1
+    P110A_MODIFICADA
+    P110C
+    P110C1
+    P110C2
+    P110C3
+    P110D
+    P110E
+    P110F
+    P110G
+    P110I
+    P111A
+    P1121
+    P1123
+    P1124
+    P1125
+    P1126
+    P1127
+    P112A
+    P1131
+    P1132
+    P1133
+    P1135
+    P1136
+    P1137
+    P1138
+    P1139
+    P113A
+    P1141
+    P1142
+    P1143
+    P1144
+    P1145
+    P114B1
+    P114B2
+    P114B3
+    P1171$01
+    P1171$02
+    P1171$04
+    P1171$05
+    P1171$06
+    P1171$07
+    P1171$08
+    P1171$09
+    P1171$10
+    P1171$11
+    P1171$12
+    P1171$13
+    P1171$14
+    P1171$15
+    P1171$16
+    P1171$17
+    P1172$01
+    P1172$02
+    P1172$04
+    P1172$05
+    P1172$06
+    P1172$07
+    P1172$08
+    P1172$09
+    P1172$10
+    P1172$11
+    P1172$12
+    P1172$13
+    P1172$14
+    P1172$15
+    P1172$16
+    P1172$17
+    P1173$01
+    P1173$02
+    P1173$04
+    P1173$05
+    P1173$06
+    P1173$07
+    P1173$08
+    P1173$09
+    P1173$10
+    P1173$11
+    P1173$12
+    P1173$13
+    P1173$14
+    P1173$15
+    P1173$16
+    P1173$17
+    P1174$01
+    P1174$02
+    P1174$04
+    P1174$05
+    P1174$06
+    P1174$07
+    P1174$08
+    P1174$09
+    P1174$10
+    P1174$11
+    P1174$12
+    P1174$13
+    P1174$14
+    P1174$15
+    P1174$16
+    P1174$17
+    P1175$01
+    P1175$02
+    P1175$04
+    P1175$05
+    P1175$06
+    P1175$07
+    P1175$08
+    P1175$09
+    P1175$10
+    P1175$11
+    P1175$12
+    P1175$13
+    P1175$14
+    P1175$15
+    P1175$16
+    P1175$17
+    P117T2
+    P117T3
+    P117T4
+    P200I
+    P22
+    P23
+    P24A
+    P24B
+    P25$1
+    P25$2
+    P25$3
+    P25$4
+    P25$5
+    P600A1
+    P600A2
+    P600D1
+    P600D2
+    P600I
+    P600M1
+    P600M2
+    P612I1
+    P612I11
+    P612I2
+    P612I22
+    P700I
+    P710I
+    P800I
+    PANEL
+    PERIODO
+    RESULT
+    SUB_CONGLOME
+    T110
+    T111A
+    TICUEST01
+    TIPENC
+    UBIGEO
+    VIVIENDA
+
+────────────────────────────────────────────────────────────
+MÓDULO: M18_EQUIPAMIENTO (Enaho01-2024-612.csv)
+  Filas (muestra): 5 | Columnas: 24
+  Columnas disponibles:
+    AÑO
+    CONGLOME
+    D612G
+    D612H
+    DOMINIO
+    ESTRATO
+    FACTOR07
+    HOGAR
+    I612G
+    I612H
+    MES
+    NCONGLOME
+    P612
+    P612A
+    P612B
+    P612C
+    P612C1
+    P612G
+    P612H
+    P612N
+    SUB_CONGLOME
+    TICUEST01
+    UBIGEO
+    VIVIENDA
+
+────────────────────────────────────────────────────────────
+MÓDULO: SUMARIA (Sumaria-2024.csv)
+  Filas (muestra): 5 | Columnas: 163
+  Columnas disponibles:
+    AÑO
+    CONGLOME
+    DOMINIO
+    ESTRATO
+    ESTRSOCIAL
+    FACTOR07
+    G05HD
+    G05HD1
+    G05HD2
+    G05HD3
+    G05HD4
+    G05HD5
+    G05HD6
+    G07HD
+    GA03HD
+    GA04HD
+    GASHOG1D
+    GASHOG2D
+    GRU11HD
+    GRU12HD1
+    GRU12HD2
+    GRU13HD1
+    GRU13HD2
+    GRU13HD3
+    GRU13HD4
+    GRU14HD
+    GRU14HD1
+    GRU14HD2
+    GRU14HD3
+    GRU14HD4
+    GRU14HD5
+    GRU14HD6
+    GRU21HD
+    GRU22HD1
+    GRU22HD2
+    GRU23HD1
+    GRU23HD2
+    GRU23HD3
+    GRU24HD
+    GRU31HD
+    GRU32HD1
+    GRU32HD2
+    GRU33HD1
+    GRU33HD2
+    GRU33HD3
+    GRU34HD
+    GRU41HD
+    GRU42HD1
+    GRU42HD2
+    GRU43HD1
+    GRU43HD2
+    GRU43HD3
+    GRU44HD
+    GRU51HD
+    GRU52HD1
+    GRU53HD1
+    GRU53HD2
+    GRU53HD3
+    GRU53HD4
+    GRU54HD
+    GRU61HD
+    GRU62HD1
+    GRU62HD2
+    GRU63HD1
+    GRU63HD2
+    GRU63HD3
+    GRU64HD
+    GRU71HD
+    GRU72HD1
+    GRU72HD2
+    GRU73HD1
+    GRU73HD2
+    GRU73HD3
+    GRU74HD
+    GRU81HD
+    GRU82HD1
+    GRU82HD2
+    GRU83HD1
+    GRU83HD2
+    GRU83HD3
+    GRU83HD4
+    GRU84HD
+    GRU84HD1
+    GRU85HD1
+    GRU86HD1
+    GRU86HD2
+    GRU87HD
+    HOGAR
+    IA01HD
+    IA02HD
+    IG03HD1
+    IG03HD2
+    IG03HD3
+    IG03HD4
+    IG06HD
+    IG06HD1
+    IG06HD2
+    IG06HD3
+    IG06HD4
+    IG06HD5
+    IG06HD6
+    IG08HD
+    INGAUTHD
+    INGBRUHD
+    INGEXTHD
+    INGHOG1D
+    INGHOG2D
+    INGINDHD
+    INGMO1HD
+    INGMO2HD
+    INGNETHD
+    INGOEXHD
+    INGRENHD
+    INGSEIHD
+    INGTEXHD
+    INGTPRHD
+    INGTPU01
+    INGTPU02
+    INGTPU03
+    INGTPU04
+    INGTPU05
+    INGTPU10
+    INGTPU11
+    INGTPU12
+    INGTPU13
+    INGTPU14
+    INGTPU15
+    INGTPU16
+    INGTPUHD
+    INGTRAHD
+    INSEDLHD
+    INSEDTHD
+    ISECAUHD
+    LD
+    LINEA
+    LINEAV
+    LINPE
+    MES
+    MIEPERHO
+    NCONGLOME
+    PAESECHD
+    PAGESPHD
+    PERCEPHO
+    POBREZA
+    POBREZAV
+    SG23
+    SG25
+    SG27
+    SG42
+    SG421
+    SG422
+    SG423
+    SG42D
+    SG42D1
+    SG42D2
+    SG42D3
+    SIG24
+    SIG26
+    SIG28
+    SUB_CONGLOME
+    TOTMIEHO
+    UBIGEO
+    VIVIENDA
+
+======================================================================
+VERIFICACIÓN DE VARIABLES CANDIDATAS PARA EL PCA SISFOH
+======================================================================
+Variable             Estado       Alias encontrado          F&P?   Descripción
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+[M18 Equipamiento — formato long, columna P612N]
+    P612N= 2  TIENE_TV             ✓ EXISTE
+    P612N= 3  COMPUTADORA_DESKTOP  ✓ EXISTE
+    P612N= 4  REFRIGERADOR         ✓ EXISTE
+    P612N= 5  LAVADORA             ✓ EXISTE
+    P612N= 9  LAPTOP               ✗ NO
+    P612N=10  SMARTPHONE           ✗ NO
+    P612N=11  TABLET               ✗ NO
+  PARED                ✓ EXISTE     P102                      ✓      Material predominante de paredes exteriores
+  PISO                 ✓ EXISTE     P103                      ✓      Material predominante de pisos
+  CUARTOS              ✓ EXISTE     P104                      ✓      Número de habitaciones del hogar (para hacinamiento)
+  ABASTAGUADOM         ✓ EXISTE     P110                      ✓      Abastecimiento de agua en el hogar
+  SERVSANIT            ✗ NO ENCONTRADA —                         ✓      Servicio sanitario / desagüe
+  ALUMBRADO            ✗ NO ENCONTRADA —                         ✓      Alumbrado del hogar
+  COMBUSTIBLE          ✗ NO ENCONTRADA —                                Combustible para cocinar
+  INTERNET_HOGAR       ✓ EXISTE     P114B2                           Acceso a internet en el hogar
+  SMARTPHONE           ✗ NO         —                                Tenencia de smartphone (P612N=10)
+  REFRIGERADOR         ✓ EXISTE     P612N=4                          Tenencia de refrigeradora (P612N=4)
+  TIENE_TV             ✓ EXISTE     P612N=2                          Tenencia de televisor (P612N=2)
+  LAVADORA             ✓ EXISTE     P612N=5                          Tenencia de lavadora (P612N=5)
+  COMPUTADORA          ✗ NO         —                                Tenencia de computadora/laptop (P612N=3 o 9)
+  INGRESO_PC           ✓ EXISTE     INGHOG2D                  ✓      Ingreso per cápita del hogar
+  MIEPERHO             ✓ EXISTE     MIEPERHO                         Número de miembros del hogar
+  POBREZA              ✓ EXISTE     POBREZA                          Clasificación de pobreza monetaria INEI
+
+======================================================================
+RESUMEN
+======================================================================
+
+  Variables disponibles:          11 / 16
+  Filmer & Pritchett disponibles: 5 / 7
+  Variables no encontradas:       5
+
+  Variables faltantes:
+    - SERVSANIT (m01_vivienda): Servicio sanitario / desagüe
+    - ALUMBRADO (m01_vivienda): Alumbrado del hogar
+    - COMBUSTIBLE (m01_vivienda): Combustible para cocinar
+    - SMARTPHONE (m18_equipamiento): Tenencia de smartphone (P612N=10)
+    - COMPUTADORA (m18_equipamiento): Tenencia de computadora/laptop (P612N=3 o 9)
+
+  Variables recomendadas para el PCA (Filmer & Pritchett 2001 + bienes durables):
+    ✓ PARED                [F&P]            alias=P102
+    ✓ PISO                 [F&P]            alias=P103
+    ✓ CUARTOS              [F&P]            alias=P104
+    ✓ ABASTAGUADOM         [F&P]            alias=P110
+    ✓ INTERNET_HOGAR       [bien durable]   alias=P114B2
+    ✓ REFRIGERADOR         [bien durable]   alias=P612N=4
+    ✓ TIENE_TV             [bien durable]   alias=P612N=2
+    ✓ LAVADORA             [bien durable]   alias=P612N=5
+    ✓ INGRESO_PC           [F&P]            alias=INGHOG2D
+    ✓ MIEPERHO             [bien durable]   alias=MIEPERHO
+    ✓ POBREZA              [bien durable]   alias=POBREZA
+
+======================================================================
+NOTA METODOLÓGICA
+======================================================================
+
+  El proxy SISFOH sigue la lógica del proxy means test del MIDIS.
+  Las variables de Filmer & Pritchett (2001) son el núcleo canónico:
+  vivienda (paredes, piso, agua, saneamiento, electricidad) + bienes durables.
+
+  Orientación del PC1: valores altos = más pobre (verificar con POBREZA==1).
+  Umbral: promedio entre max(POBREZA=2) y min(POBREZA=1) sobre adultos ≥65.
+
+  Variables a evitar en el PCA:
+    - INGRESO_PC y POBREZA: endógenas al tratamiento (la transferencia las altera)
+    - TIENE_BILLETERA: es la variable de resultado, no puede ser input del índice
+    - NIVEL_EDUCATIVO: puede usarse como covariable externa pero no en el índice
