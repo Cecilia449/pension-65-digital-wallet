@@ -1,16 +1,27 @@
-﻿# Datos crudos descargados (>500 MB — no subir a GitHub)
+# ── Datos ENAHO crudos (>500 MB — regenerables con phase_0_download) ──────
 data/clean/_raw_extracted/
-data/clean/*.csv
-data/clean/*.json
+scripts/script_completo/_enaho_temp/
 
-# Python
+# ── Datasets analíticos grandes (regenerables con phase_1 + phase_2) ──────
+data/clean/enaho_2024_clean.csv
+data/clean/enaho_rdd_full.csv
+data/clean/enaho_rdd_main.csv
+data/clean/main_dataset.csv
+data/clean/clean_data.csv
+data/clean/enaho_rdd2_mayores.csv
+
+# ── Outputs pequeños de resultados — SÍ se versionan ─────────────────────
+# main_results.csv, rdd2_results.csv, bandwidth_sensitivity_rdd1.csv,
+# tabla_resultados_comparativa.csv, dilution_calc.json — NO están excluidos
+
+# ── Python ────────────────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .env
 
-# Archivos temporales
+# ── LaTeX auxiliares ──────────────────────────────────────────────────────
 *.log
 *.aux
 *.fls
@@ -18,7 +29,10 @@ __pycache__/
 *.synctex.gz
 *.out
 *.toc
+*.blg
+*.bbl
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+*.recovered

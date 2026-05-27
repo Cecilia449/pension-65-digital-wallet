@@ -1,0 +1,94 @@
+% ============================================================
+%  equations_expo.tex
+%  Ecuaciones principales del fuzzy RDD — listo para Overleaf
+%  Pensión 65 × Billetera Digital, ENAHO 2024
+% ============================================================
+
+% ── Notación ──────────────────────────────────────────────
+% i       = individuo
+% D_i     = 1 si la persona i recibe Pensión 65 (P5567A = 1)
+% Y_i     = TIENE_BILLETERA (billetera digital, tenencia o uso)
+% Z_i     = 1(Edad_i >= 65)   [instrumento / discontinuidad]
+% r_i     = Edad_i - 65       [running variable centrada]
+% h       = ancho de banda (h* = 14 años)
+% K(·)    = kernel triangular
+% ──────────────────────────────────────────────────────────
+
+% ── Ecuación 1: Primera Etapa (First Stage) ───────────────
+% Estima cómo el instrumento Z_i predice el tratamiento D_i.
+% El coeficiente rho (ρ) es el salto en la probabilidad de
+% recibir Pensión 65 exactamente en el corte de edad 65.
+
+\begin{equation}
+    \label{eq:first_stage}
+    D_i
+    \;=\;
+    \alpha_0
+    + \underbrace{\rho}_{\text{1ra etapa}}
+        \cdot \mathbf{1}[\text{Edad}_i \geq 65]
+    + \alpha_1 \, r_i
+    + \alpha_2 \, r_i \cdot \mathbf{1}[r_i \geq 0]
+    + \varepsilon_i
+    \quad
+    \left| \, |r_i| \leq h \right.
+\end{equation}
+
+% Resultado estimado (Candidato A, muestra completa, h = 14):
+%   \hat{\rho} = 0.104,  F-estadístico \approx 310  (instrumento fuerte)
+
+% ── Ecuación 2: Segunda Etapa (IV / 2SLS) ────────────────
+% Regresa el outcome Y_i sobre la predicción \hat{D}_i
+% de la primera etapa. El coeficiente tau (τ) es el LATE:
+% Local Average Treatment Effect para los compliers.
+
+\begin{equation}
+    \label{eq:second_stage}
+    Y_i
+    \;=\;
+    \beta_0
+    + \underbrace{\tau}_{\text{LATE}}
+        \cdot \widehat{D}_i
+    + \beta_1 \, r_i
+    + \beta_2 \, r_i \cdot \mathbf{1}[r_i \geq 0]
+    + u_i
+    \quad
+    \left| \, |r_i| \leq h \right.
+\end{equation}
+
+% Resultado estimado (Candidato A, muestra completa):
+%   \hat{\tau}_{LATE} = -0.012,  IC_{95\%} = [-0.190,\; +0.166]
+%   No rechazamos nulo. Cota superior excluye efectos > +17 pp.
+
+% ── Ecuación 3: Relación ITT – LATE (Wald / 2SLS) ────────
+% La estimación de variables instrumentales en el RDD se
+% interpreta como el cociente entre la forma reducida (RF,
+% efecto del instrumento sobre el outcome) y la primera
+% etapa (FS, efecto del instrumento sobre el tratamiento).
+% Siguiendo Angrist y Pischke (2009), cap. 4.
+
+\begin{equation}
+    \label{eq:late_wald}
+    \hat{\tau}_{\text{LATE}}
+    \;=\;
+    \frac{\hat{\tau}_{\text{RF}}}{\hat{\rho}}
+    \;=\;
+    \frac{
+        \displaystyle\lim_{r \downarrow 0} \mathbb{E}[Y_i \mid r_i = r]
+        -
+        \displaystyle\lim_{r \uparrow 0}  \mathbb{E}[Y_i \mid r_i = r]
+    }{
+        \displaystyle\lim_{r \downarrow 0} \mathbb{E}[D_i \mid r_i = r]
+        -
+        \displaystyle\lim_{r \uparrow 0}  \mathbb{E}[D_i \mid r_i = r]
+    }
+\end{equation}
+
+% El LATE identifica el efecto causal de Pensión 65 sobre
+% la adopción de billetera digital ÚNICAMENTE para los
+% "compliers": individuos que reciben el bono si y solo si
+% tienen 65 años o más (Imbens y Angrist, 1994).
+%
+% Referencia:
+%   Angrist, J. D., & Pischke, J. S. (2009).
+%   \textit{Mostly Harmless Econometrics}.
+%   Princeton University Press. Cap. 4.6.

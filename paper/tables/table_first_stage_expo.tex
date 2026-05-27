@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\caption{Primera Etapa del Fuzzy RDD: Probabilidad de Recibir Pensión 65 por Edad}
+\label{tab:primera_etapa}
+\begin{threeparttable}
+\begin{tabular}{r ccc}
+\toprule
+Edad & $N$ total & Receptores P65 & \% receptores \\
+\midrule
+  60 & 1{,}137 & 0 & 0.0\% \\
+  61 & 1{,}149 & 0 & 0.0\% \\
+  62 & 1{,}045 & 0 & 0.0\% \\
+  63 & 1{,}048 & 0 & 0.0\% \\
+  64 & 1{,}092 & 0 & 0.0\% \\
+\midrule
+  65 & 1{,}059 & 39 & 3.7\% \\
+  66 & 914 & 143 & 15.6\% \\
+  67 & 867 & 184 & 21.2\% \\
+  68 & 866 & 182 & 21.0\% \\
+  69 & 886 & 209 & 23.6\% \\
+  70 & 826 & 216 & 26.2\% \\
+  75 & 611 & 222 & 36.3\% \\
+  80 & 388 & 176 & 45.4\% \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notas:} La tabla muestra la probabilidad de recibir Pensión 65 (variable \texttt{P5567A==1} del Módulo 5 de ENAHO 2024) para edades seleccionadas. La línea horizontal separa individuos por debajo del corte de edad ($< 65$ años) de los elegibles ($\geq 65$ años). El salto discontinuo a los 65 años constituye la primera etapa del fuzzy RDD: la probabilidad pasa de 0\% en edades 60--64 a valores crecientes desde los 65. Fuente: ENAHO 2024 (Encuesta 966).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

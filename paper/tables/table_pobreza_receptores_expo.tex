@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Hallazgo Crítico: Distribución de Receptores Reales de Pensión 65 según Clasificación de Pobreza Monetaria del INEI}
+\label{tab:pobreza_receptores}
+\begin{threeparttable}
+\begin{tabular}{l l cc l}
+\toprule
+Código & Clasificación INEI & Receptores & \% del total & Descripción \\
+\midrule
+  \textbf{POBREZA$=1$} & \textbf{Extremo pobre monetario} & \textbf{501} & \textbf{11.3\%} & \textbf{Ingreso pc bajo línea extrema} \\
+  POBREZA$=2$ & Pobre no extremo monetario & 1{,}118 & 25.2\% & Ingreso pc bajo línea de pobreza \\
+  POBREZA$=3$ & No pobre monetario & 2{,}818 & 63.5\% & Ingreso pc sobre línea de pobreza \\
+\midrule
+  \textit{Total receptores} & & 4{,}437 & 100.0\% & \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notas:} La tabla muestra la distribución de los 4{,}437 receptores reales de Pensión 65 identificados en ENAHO 2024 mediante la variable \texttt{P5567A==1} (Módulo 5, declaración individual), según su clasificación de pobreza monetaria del INEI (variable \texttt{POBREZA} de Sumaria). En \textbf{negrita} la categoría que el diseño anterior del paper usaba como muestra primaria (\texttt{POBREZA=1}), lo cual excluye al \textbf{88.7\%} de los receptores reales. La discrepancia se explica por: (1) reverse causality — recibir S/250/mes durante años eleva el gasto del hogar, sacando al receptor de la categoría extremo pobre; (2) el criterio de elegibilidad de Pensión 65 es el puntaje SISFOH (proxy means test de MIDIS), no la pobreza monetaria del INEI.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

@@ -1,0 +1,6 @@
+{
+  "frac_ep_in_bandwidth": 0.0505,
+  "takeup_assumed": 0.75,
+  "tau_itt": 0.0006,
+  "tau_late_implicit": 0.0154
+}

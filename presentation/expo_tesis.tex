@@ -1,0 +1,527 @@
+% ============================================================
+%  expo_tesis.tex  —  Exposición parcial de tesis
+%  El efecto de la elegibilidad a Pensión 65 sobre la adopción
+%  de billeteras digitales en adultos mayores — Perú 2024
+%  Listo para compilar en Overleaf (pdflatex)
+% ============================================================
+\documentclass[aspectratio=169, 10pt]{beamer}
+
+% ── Packages ──────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{ragged2e}
+
+% ── Tema y colores ────────────────────────────────────────────────────────
+\usetheme{Madrid}
+\definecolor{darkblue}{RGB}{0,47,108}
+\definecolor{midblue}{RGB}{31,78,163}
+\definecolor{lightblue}{RGB}{173,214,243}
+\definecolor{alertred}{RGB}{180,35,35}
+\definecolor{successgreen}{RGB}{34,120,50}
+
+\usecolortheme[named=darkblue]{structure}
+\setbeamercolor{palette primary}{bg=darkblue, fg=white}
+\setbeamercolor{palette secondary}{bg=midblue, fg=white}
+\setbeamercolor{palette tertiary}{bg=darkblue, fg=white}
+\setbeamercolor{palette quaternary}{bg=darkblue, fg=white}
+\setbeamercolor{frametitle}{bg=darkblue, fg=white}
+\setbeamercolor{title}{bg=darkblue, fg=white}
+\setbeamercolor{block title}{bg=midblue, fg=white}
+\setbeamercolor{block body}{bg=lightblue!30, fg=black}
+\setbeamercolor{alerted text}{fg=alertred}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize item}{\color{darkblue}$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\color{midblue}$\triangleright$}
+
+% ── Metadatos ─────────────────────────────────────────────────────────────
+\title[Pensión 65 y Billeteras Digitales]{%
+  El efecto de la elegibilidad a Pensión 65\\
+  sobre la adopción de billeteras digitales\\
+  en adultos mayores}
+\subtitle{Evidencia de regresión discontinua en el Perú, 2024}
+\author[Vargas Risco]{%
+  \textbf{Cecilia Sadeli Vargas Risco}\\[4pt]
+  {\small Asesora: Alexander Quispe}}
+\institute[PUCP]{%
+  Pontificia Universidad Católica del Perú\\
+  Facultad de Ciencias Sociales}
+\date{Mayo 2026}
+
+% ── Comandos auxiliares ───────────────────────────────────────────────────
+\newcommand{\CI}[2]{[\,{#1},\;{#2}\,]}
+\newcommand{\pcheck}{\textcolor{successgreen}{\checkmark}\ }
+
+% ══════════════════════════════════════════════════════════════════════════
+\begin{document}
+% ══════════════════════════════════════════════════════════════════════════
+
+% ── FRAME 1: PORTADA ──────────────────────────────────────────────────────
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ── FRAME 2: MOTIVACIÓN ───────────────────────────────────────────────────
+\begin{frame}{Motivación}
+  \begin{itemize}
+    \setlength\itemsep{14pt}
+    \item Yape y Plin superaron \textbf{105 millones de operaciones mensuales}
+          en enero de 2024 (BCRP), pero la adopción es profundamente desigual:
+          los adultos mayores en pobreza extrema son el grupo con
+          \textbf{menor adopción digital}.
+
+    \item El Estado peruano \textbf{digitaliza transferencias}
+          (Pensión 65, Juntos, Beca 18) como mecanismo de inclusión
+          financiera, asumiendo que la recepción del bono activa el uso
+          de billeteras.
+
+    \item \textbf{No existe evidencia causal} sobre si esa activación
+          ocurre efectivamente entre los adultos mayores beneficiarios de
+          Pensión 65 en Perú.
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 3: PREGUNTA DE INVESTIGACIÓN ────────────────────────────────────
+\begin{frame}{Pregunta de Investigación}
+  \vspace{6pt}
+  \begin{block}{}
+    \centering
+    \large
+    \textbf{¿Cruzar el umbral de elegibilidad de Pensión 65 a los 65 años
+    aumenta la adopción de billeteras digitales\\
+    entre adultos mayores en el Perú?}
+  \end{block}
+
+  \vspace{14pt}
+  \begin{itemize}
+    \setlength\itemsep{10pt}
+    \item \textbf{Primera evidencia causal para Perú} usando ENAHO 2024
+          (N\,=\,113{,}755 individuos) y diseño de regresión
+          discontinua difusa (fuzzy RDD) en el umbral de edad 65.
+
+    \item \textbf{Primera encuesta que mide billeteras digitales}
+          como categoría diferenciada (Yape, Plin, Cuenta DNI),
+          tanto tenencia como uso activo.
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 4: DATOS ────────────────────────────────────────────────────────
+\begin{frame}{Datos: ENAHO 2024}
+  \vspace{4pt}
+  \begin{center}
+  \small
+  \begin{tabular}{l cc}
+    \toprule
+    \textbf{Variable} &
+    \textbf{Above Threshold} ($\geq 65$ años) &
+    \textbf{Below Threshold} ($< 65$ años) \\
+    & \textit{N\,=\,14{,}088} & \textit{N\,=\,99{,}667} \\
+    \midrule
+    Tiene billetera digital (tenencia o uso) & 7.9\%  & 22.2\% \\
+    Usa billetera digital (solo uso activo)  & 3.2\%  & 17.9\% \\
+    Internet en el hogar                     & 41.7\% & 46.4\% \\
+    Smartphone en el hogar                   & 83.1\% & 86.9\% \\
+    Pobreza monetaria INEI (media, 1–3)      & 2.74   & 2.68   \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{6pt}
+  \begin{alertblock}{}
+    \small
+    Muestra total: \textbf{113{,}755 individuos} — ENAHO 2024, Encuesta 966
+    (período anual Ene–Dic 2024). Primera encuesta ENAHO que incluye
+    billeteras digitales como categoría diferenciada de instrumento
+    de pago (P558E1\_9 y P558Hk\_7).
+  \end{alertblock}
+\end{frame}
+
+% ── FRAME 5: BRECHA DIGITAL ───────────────────────────────────────────────
+\begin{frame}{Brecha Digital por Edad}
+  \begin{center}
+    \includegraphics[width=0.82\textwidth]{figure_descriptivos_brecha.pdf}
+  \end{center}
+  \vspace{-6pt}
+  \begin{block}{}
+    \small
+    \textit{Las diferencias descriptivas reflejan el gradiente natural de
+    edad en tecnología (Czaja et al., 2006), no el efecto del programa.
+    El diseño RDD permite aislar el efecto causal comparando personas justo
+    a ambos lados del umbral de 65 años.}
+  \end{block}
+\end{frame}
+
+% ── FRAME 6: ESTRATEGIA DE IDENTIFICACIÓN ─────────────────────────────────
+\begin{frame}{Estrategia de Identificación: Fuzzy RDD en el Umbral de 65 Años}
+  \small
+  \textit{Comparamos personas justo antes y después del umbral de edad: son
+  comparables en todo salvo su elegibilidad administrativa al programa.}
+
+  \vspace{4pt}
+  \begin{itemize}
+    \setlength\itemsep{3pt}
+    \item \textbf{Variable de corrida:} edad centrada en 65 ($r_i = \text{Edad}_i - 65$)
+    \item \textbf{Umbral administrativamente rígido,} verificado por DNI,
+          no manipulable por el individuo
+    \item \textbf{Diseño \emph{fuzzy}:} Pensión 65 requiere también clasificación
+          SISFOH extremo pobre $\Rightarrow$ no todos los mayores de 65 reciben
+  \end{itemize}
+
+  \vspace{6pt}
+  \textbf{Ecuación 1 — Primera Etapa:}
+  \begin{equation*}
+    D_i = \alpha_0
+        + \rho\,\mathbf{1}[\text{Edad}_i \geq 65]
+        + \alpha_1 r_i
+        + \alpha_2\,r_i \cdot \mathbf{1}[r_i \geq 0]
+        + \varepsilon_i
+    \quad\bigl|\;|r_i| \leq h\bigr.
+  \end{equation*}
+
+  \textbf{Ecuación 2 — Segunda Etapa (IV):}
+  \begin{equation*}
+    Y_i = \beta_0
+        + \tau\,\widehat{D}_i
+        + \beta_1 r_i
+        + \beta_2\,r_i \cdot \mathbf{1}[r_i \geq 0]
+        + u_i
+    \quad\bigl|\;|r_i| \leq h\bigr.
+  \end{equation*}
+
+  \textbf{Ecuación 3 — Relación ITT–LATE (Angrist \& Pischke, 2009):}
+  \begin{equation*}
+    \hat{\tau}_{\text{LATE}}
+    = \frac{\hat{\tau}_{\text{RF}}}{\hat{\rho}}
+    = \frac{%
+        \lim_{r \downarrow 0}\mathbb{E}[Y_i \mid r_i=r]
+        - \lim_{r \uparrow 0}\mathbb{E}[Y_i \mid r_i=r]}{%
+        \lim_{r \downarrow 0}\mathbb{E}[D_i \mid r_i=r]
+        - \lim_{r \uparrow 0}\mathbb{E}[D_i \mid r_i=r]}
+  \end{equation*}
+\end{frame}
+
+% ── FRAME 7: HALLAZGO CRÍTICO ─────────────────────────────────────────────
+\begin{frame}{Hallazgo Crítico: Un Problema en el Diseño Original}
+  \textit{La variable POBREZA monetaria del INEI \textbf{no equivale} al
+  criterio SISFOH que usa Pensión 65 para determinar elegibilidad.}
+
+  \vspace{8pt}
+  \begin{center}
+  \small
+  \begin{tabular}{l rr}
+    \toprule
+    \textbf{Clasificación INEI (POBREZA)} &
+    \textbf{Receptores reales P65} & \textbf{\%} \\
+    \midrule
+    POBREZA\,=\,1\ \ (extremo pobre monetario)
+      & \ \ \ 501 & 11.3\% \\
+    POBREZA\,=\,2\ \ (pobre no extremo monetario)
+      & 1{,}118 & 25.2\% \\
+    POBREZA\,=\,3\ \ (no pobre monetario)
+      & 2{,}818 & 63.5\% \\
+    \midrule
+    \textit{Total}
+      & 4{,}437 & 100.0\% \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{6pt}
+  \begin{alertblock}{}
+    \textbf{Restringir a POBREZA\,=\,1 excluye al 88.7\% de los receptores
+    reales.}
+  \end{alertblock}
+
+  \vspace{4pt}
+  \textbf{Tres causas:}
+  \begin{itemize}
+    \setlength\itemsep{2pt}
+    \item \textit{Causalidad inversa:} la transferencia eleva el gasto
+          del hogar $\Rightarrow$ el receptor «sube» de POBREZA\,=\,1 a 2 o 3
+    \item \textit{SISFOH mide activos y condiciones de vivienda,}
+          no gasto corriente (proxy means test de MIDIS)
+    \item \textit{Error de clasificación} entre ambos sistemas
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 8: VARIABLES CORRECTAS ──────────────────────────────────────────
+\begin{frame}{Lo Que Tenemos Ahora: Variables Correctas en ENAHO 2024}
+  \begin{center}
+  \small
+  \begin{tabular}{l l l r}
+    \toprule
+    \textbf{Variable} & \textbf{Módulo} & \textbf{Nivel} &
+    \textbf{Receptores} \\
+    \midrule
+    \texttt{P5567A}\,=\,1 & Módulo 5 (Empleo) & Persona &
+    \textbf{4{,}437} \\
+    \texttt{INGTPU03}\,>\,0 & Sumaria & Hogar &
+    \textbf{3{,}564 hogares} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{10pt}
+  \begin{block}{Validación interna}
+    \begin{itemize}
+      \setlength\itemsep{6pt}
+      \item \textbf{Monto mediano:} S/\,1{,}506/año
+            $\approx$ S/\,251/mes\quad
+            $\simeq$\quad transferencia real de S/\,250 del programa \checkmark
+      \item \textbf{Expansión poblacional:}
+            $\approx$\,902{,}000 beneficiarios estimados\\
+            vs.\ 750{,}000 oficiales MIDIS
+            (diferencia razonable por sub-declaración y timing)
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+% ── FRAME 9: PRIMERA ETAPA ────────────────────────────────────────────────
+\begin{frame}{Primera Etapa del Fuzzy RDD}
+  \begin{center}
+    \includegraphics[width=0.80\textwidth]{figure_first_stage.pdf}
+  \end{center}
+  \vspace{-6pt}
+  \begin{block}{}
+    \small
+    \textit{La probabilidad de recibir Pensión 65 salta discontinuamente
+    al cruzar los 65 años.
+    Primera etapa: $\hat{\rho} = 0.104$,\; $F = 310.4$ —
+    instrumento fuerte (Stock \& Yogo, 2005: umbral $F > 10$).}
+  \end{block}
+\end{frame}
+
+% ── FRAME 10: RESULTADOS PRINCIPALES ──────────────────────────────────────
+\begin{frame}{Resultados del Fuzzy RDD}
+  \vspace{4pt}
+  \begin{center}
+  \small
+  \begin{tabular}{l l cc cc}
+    \toprule
+    \multirow{2}{*}{\textbf{Candidato}} &
+    \multirow{2}{*}{\textbf{Muestra}} &
+    \multicolumn{2}{c}{\textbf{Primera etapa}} &
+    \textbf{Forma reducida} &
+    \textbf{LATE} \\
+    \cmidrule(lr){3-4}
+    & & Coef. & $F$ & Coef.\ [IC 95\%] & Coef.\ [IC 95\%] \\
+    \midrule
+    A &
+    Completa \textit{(primaria)} &
+    0.104 & 310 &
+    $-$0.001 \CI{$-$0.020}{$+$0.017} &
+    $-$0.012 \CI{$-$0.190}{$+$0.166} \\[3pt]
+    B &
+    POBREZA\,=\,1 \textit{(heterog.)} &
+    0.258 & \ 50 &
+    $+$0.027 \CI{$-$0.008}{$+$0.063} &
+    $+$0.106 \CI{$-$0.035}{$+$0.246} \\[3pt]
+    C &
+    POBREZA\,$\leq$\,2 \textit{(heterog.)} &
+    0.202 & 138 &
+    $+$0.019 \CI{$-$0.006}{$+$0.043} &
+    $+$0.093 \CI{$-$0.031}{$+$0.216} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+  \vspace{4pt}
+  \begin{alertblock}{\small Nota importante}
+    \footnotesize
+    \textbf{Candidato A} es la estimación primaria.
+    \textbf{Candidatos B y C} son heterogeneidad descriptiva
+    \emph{post-tratamiento} — POBREZA es clasificación monetaria del INEI,
+    \textbf{no} el criterio SISFOH; usarlas como restricción introduce
+    sesgo de selección (reverse causality).
+  \end{alertblock}
+\end{frame}
+
+% ── FRAME 11: EVIDENCIA VISUAL ────────────────────────────────────────────
+\begin{frame}{Evidencia Visual: RD Plot}
+  \begin{center}
+    \includegraphics[width=0.82\textwidth]{figure_1_rdplot.pdf}
+  \end{center}
+  \vspace{-6pt}
+  \begin{block}{}
+    \small
+    \textit{Sin discontinuidad visible en la adopción de billeteras
+    digitales en el umbral de 65 años — ENAHO 2024.
+    Cada punto es la media binada de \texttt{TIENE\_BILLETERA}
+    dentro de una ventana de 1 año de edad.}
+  \end{block}
+\end{frame}
+
+% ── FRAME 12: SENSIBILIDAD AL BANDWIDTH ───────────────────────────────────
+\begin{frame}{Robustez al Ancho de Banda}
+  \begin{center}
+    \includegraphics[width=0.82\textwidth]{figure_2_bandwidth_sensitivity.pdf}
+  \end{center}
+  \vspace{-6pt}
+  \begin{block}{}
+    \small
+    \textit{Estimaciones estables en todos los anchos de banda:
+    $h/2$, $h^{\ast}$ (óptimo) y $2h$.
+    El intervalo de confianza al 95\% cruza cero en todas las
+    especificaciones — el nulo es robusto.}
+  \end{block}
+\end{frame}
+
+% ── FRAME 13: PRUEBAS DE VALIDEZ ──────────────────────────────────────────
+\begin{frame}{Pruebas de Validez del Diseño}
+  \begin{itemize}
+    \setlength\itemsep{12pt}
+    \item[\pcheck] \textbf{Test de densidad (McCrary):}
+          $T = 2.00$ — sin evidencia de manipulación
+          del running variable alrededor del umbral de 65 años.
+
+    \item[\pcheck] \textbf{Balance de covariables:}
+          cinco variables predeterminadas (internet, smartphone,
+          ingreso pc, educación, área) sin discontinuidad
+          estadísticamente significativa en el umbral.
+
+    \item[\pcheck] \textbf{Sensibilidad al ancho de banda:}
+          estimaciones estables para $h \in \{7, 10, 14, 18, 24\}$ años.
+
+    \item[\pcheck] \textbf{Especificación cuadrática:}
+          resultados cualitativamente idénticos al baseline lineal.
+
+    \item[\pcheck] \textbf{Placebo Juntos}
+          ($\hat{\tau} = 0.010$, IC$_{95\%} = [-0.002,\,+0.022]$):
+          no hay discontinuidad espuria en transferencias sin
+          corte de edad a los 65.
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 14: INTERPRETACIÓN DEL NULO ────────────────────────────────────
+\begin{frame}{¿Por Qué el Resultado es Nulo?}
+  \begin{itemize}
+    \setlength\itemsep{14pt}
+    \item \textbf{Cuentas durmientes}
+          \textit{(Bachas et al., 2018):}
+          los beneficiarios reciben la transferencia pero retiran efectivo
+          en ventanilla sin adoptar la billetera activamente.
+          La apertura de cuenta no equivale al uso.
+
+    \item \textbf{Gradiente de edad en tecnología}
+          \textit{(Czaja et al., 2006):}
+          los adultos mayores enfrentan costos de aprendizaje
+          más altos que anulan el incentivo institucional del bono.
+
+    \item \textbf{Canal institucional insuficiente}
+          \textit{(Banerjee et al., 2020):}
+          el acceso al sistema financiero es necesario pero
+          no suficiente sin \textbf{alfabetización digital},
+          acceso subsidiado a smartphones y
+          \textbf{acompañamiento presencial}.
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 15: LIMITACIONES Y PRÓXIMOS PASOS ──────────────────────────────
+\begin{frame}{Limitaciones de los Datos y Próximos Pasos}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \begin{block}{Lo que no tenemos en los datos}
+        \footnotesize
+        \begin{itemize}
+          \setlength\itemsep{4pt}
+          \item Puntaje SISFOH oficial no disponible en ENAHO —
+                solo clasificación monetaria como proxy
+          \item Subreporte documentado de la recepción efectiva
+                de Pensión 65 (Torres \& Salinas, 2016)
+          \item Datos de panel para capturar efectos dinámicos
+                a lo largo del tiempo
+          \item Registros administrativos del MIDIS para estimar
+                LATE sobre beneficiarios reales
+        \end{itemize}
+      \end{block}
+
+      \vspace{6pt}
+      \begin{block}{Lo que tenemos y usamos}
+        \footnotesize
+        \begin{itemize}
+          \setlength\itemsep{4pt}
+          \item \texttt{P5567A} identifica receptores a nivel persona
+                (4{,}437 validados)
+          \item \texttt{INGTPU03} confirma recepción a nivel hogar
+                (monto mediano S/\,251/mes, consistente con el programa)
+          \item \texttt{SAMPLE\_FLAG} permite comparar tres muestras
+                sin sesgo post-tratamiento
+        \end{itemize}
+      \end{block}
+
+    \column{0.48\textwidth}
+      \begin{block}{Próximos pasos concretos}
+        \footnotesize
+        \begin{itemize}
+          \setlength\itemsep{4pt}
+          \item Construir proxy SISFOH con ACP usando variables de
+                vivienda, servicios básicos y bienes durables
+                (Filmer \& Pritchett, 2001)
+          \item Incorporar filtros de exclusión del
+                DS\,081-2011-PCM: pensiones contributivas y
+                programas incompatibles con Pensión 65
+          \item Reestimar con variable de elegibilidad combinada
+                (edad $\geq 65$ + proxy SISFOH + filtros)
+                para acercarse al LATE sobre beneficiarios reales
+          \item Vincular registros administrativos MIDIS con ENAHO
+                para validar la elegibilidad observada vs.\ declarada
+        \end{itemize}
+      \end{block}
+  \end{columns}
+\end{frame}
+
+% ── FRAME 16: CONCLUSIONES ────────────────────────────────────────────────
+\begin{frame}{Conclusiones}
+  \begin{itemize}
+    \setlength\itemsep{14pt}
+    \item Cruzar el umbral de elegibilidad de Pensión 65
+          \textbf{no genera un aumento estadísticamente significativo}
+          en la adopción de billeteras digitales
+          ($\hat{\tau}_{\text{ITT}} = -0.002$,
+           IC$_{95\%} = [-0.040,\,+0.036]$),
+          estable en todas las especificaciones y anchos de banda.
+
+    \item El nulo \textbf{no es solo dilución estadística:}
+          con el diseño fuzzy RDD corregido,
+          la primera etapa es fuerte ($F = 310$) y la
+          forma reducida es genuinamente pequeña
+          ($\hat{\tau}_{\text{RF}} = -0.001$) —
+          el efecto es pequeño en la población general.
+
+    \item La \textbf{digitalización institucional de transferencias
+          no es suficiente por sí sola:}
+          se necesitan complementos de
+          \textbf{alfabetización digital},
+          acceso subsidiado a smartphones y
+          \textbf{acompañamiento presencial}
+          para lograr inclusión financiera activa.
+  \end{itemize}
+\end{frame}
+
+% ── FRAME 17: CIERRE ──────────────────────────────────────────────────────
+\begin{frame}[plain]
+  \vspace{0pt}
+  \begin{center}
+    \vspace{36pt}
+    {\Huge\textbf{\textcolor{darkblue}{Gracias}}}
+
+    \vspace{28pt}
+    {\large\textcolor{midblue}{Preguntas}}
+
+    \vfill
+    \small\textcolor{gray}{
+      Cecilia Sadeli Vargas Risco\quad·\quad PUCP\quad·\quad Mayo 2026\\[4pt]
+      \texttt{svargasrisco@pucp.edu.pe}
+    }
+  \end{center}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════
+\end{document}

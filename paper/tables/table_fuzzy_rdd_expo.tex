@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Resultados del Fuzzy RDD: Primera Etapa, Forma Reducida y LATE}
+\label{tab:fuzzy_rdd}
+\begin{threeparttable}
+\begin{tabular}{l c c c c c}
+\toprule
+& & \multicolumn{2}{c}{\textbf{Primera etapa}} & \textbf{Forma reducida} & \textbf{LATE} \\
+\cmidrule(lr){3-4}
+Candidato & $N$ (BW) & Coef. & $F$ & Coef.\ [IC 95\%] & Coef.\ [IC 95\%] \\
+\midrule
+  A — Muestra completa & $27{,}214$ & 0.104 & 310 & $-$0.001 [$-$0.020, $+$0.017] & $-$0.012 [$-$0.190, $+$0.166] \\
+  B — POBREZA$=1$ (ext.~pobre) & $1{,}213$ & 0.258 & 50 & $+$0.027 [$-$0.008, $+$0.063] & $+$0.106 [$-$0.035, $+$0.246] \\
+  C — POBREZA$\leq 2$ (pobres) & $5{,}119$ & 0.202 & 138 & $+$0.019 [$-$0.006, $+$0.043] & $+$0.093 [$-$0.031, $+$0.216] \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textbf{Candidato A} es la estimación primaria del paper: fuzzy RDD sobre la muestra completa de ENAHO 2024, sin restricción por pobreza monetaria. \textbf{Candidatos B y C} son análisis de heterogeneidad descriptiva post-tratamiento: la variable POBREZA es una clasificación monetaria del INEI calculada ex post y con probable reverse causality (recibir S/250/mes eleva el gasto del hogar), por lo que NO constituyen restricciones de elegibilidad válidas. Todas las estimaciones usan kernel triangular, regresión local-lineal y errores estándar HC1. Bandwidth $h = 14$ años en torno al corte de edad 65. Variable dependiente: \texttt{TIENE\_BILLETERA} (tenencia o uso de billetera digital). Instrumento: $\mathbf{1}[\text{Edad} \geq 65]$. Tratamiento endógeno: \texttt{P5567A} (recepción individual de Pensión 65).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
