@@ -9,6 +9,10 @@ data/clean/enaho_rdd_main.csv
 data/clean/main_dataset.csv
 data/clean/clean_data.csv
 data/clean/enaho_rdd2_mayores.csv
+data/clean/ifh_raw_variables.csv
+
+# ── Literatura PDF (copyright, no redistribuir) ──────────────────────────
+lit_review/
 
 # ── Outputs pequeños de resultados — SÍ se versionan ─────────────────────
 # main_results.csv, rdd2_results.csv, bandwidth_sensitivity_rdd1.csv,

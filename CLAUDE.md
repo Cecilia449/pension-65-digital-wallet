@@ -181,6 +181,113 @@ heterogeneidad descriptivos**, no especificaciones primarias.
 
 ---
 
+## 4.5. Nueva línea de trabajo: replicar SISFOH IFH (Bernal-Carpio-Klein 2017)
+
+**Motivación**: el problema POBREZA monetaria ≠ SISFOH se resuelve si
+construimos nuestro propio puntaje SISFOH a partir de características
+predeterminadas de vivienda. Bernal, Carpio y Klein (2017, JPubE Online
+Appendix F, Tablas A.8/A.9/A.10) publicaron **los pesos exactos del IFH**
+(Índice de Focalización de Hogares) usados por SISFOH 2010. Eso nos
+permite replicar el score sin pedir nada a INEI.
+
+PDF de referencia (no commiteado por copyright):
+  `lit_review/1-s2.0-S0047272717301299-mmc1.pdf`
+
+### Estructura del IFH (BCK 2017, Apéndice F)
+
+- 7-11 variables categóricas de vivienda, servicios, activos y educación
+- 3 conjuntos de pesos según área: Lima Metropolitana / otras áreas
+  urbanas / áreas rurales
+- IFH raw = suma ponderada de las dummies de cada categoría
+- IFH estandarizado en [0, 100] por **cluster** (15 clusters definidos por
+  SISFOH-2010 agrupando áreas con pobreza monetaria similar en 2009)
+- Hogar es SIS-elegible si IFH_std ≤ threshold (Tabla A.10)
+- Lima threshold = 55, rurales típicos 33-38, urbanos típicos 42-52
+
+### Plan (7 pasos)
+
+| Paso | Estado | Output |
+|---|---|---|
+| 1. Transcribir pesos Tablas A.8/A.9/A.10 | ✅ HECHO | `scripts/ifh_weights.py` |
+| 2. Extraer variables crudas ENAHO 2024 | ✅ HECHO | `data/clean/ifh_raw_variables.csv` (regenerable) |
+| 3. Asignar cluster geográfico (1-15) | PENDING | requiere mapeo ubigeo → cluster (pedir a INEI o aproximar con DOMINIO × AREA) |
+| 4. Computar IFH_RAW e IFH_STD | PENDING | `data/clean/ifh_2024.csv` |
+| 5. Aplicar umbrales por cluster | PENDING | flag `ELIGIBLE_SIS` |
+| 6. Validar contra POBREZA y receptores P65 | PENDING | `data/clean/ifh_validation.md` |
+| 7. Integrar como running variable RDD (Bando-style) o restricción de muestra | PENDING | tablas nuevas en paper |
+
+### Paso 1 hecho — pesos transcritos
+
+`scripts/ifh_weights.py` contiene:
+- `WEIGHTS_LIMA` (11 variables: combustible, agua, paredes, desagüe,
+  miembros con seguro, bienes, **teléfono fijo**, techo, educación jefe,
+  piso, hacinamiento)
+- `WEIGHTS_URBAN` (10 variables: igual que Lima sin teléfono fijo)
+- `WEIGHTS_RURAL` (7 variables: combustible, miembros seguro, bienes,
+  educación jefe, **educación máx hogar**, **electricidad**, **piso de
+  tierra**)
+- `THRESHOLDS_BY_CLUSTER` (15 clusters, Tabla A.10)
+- `CLUSTER_AREA` (provisional cluster → lima/urban/rural)
+- `VARS_BY_AREA` (qué variables aplican a cada área)
+
+Validación al importar el módulo: cada area tiene todas sus variables
+declaradas con pesos completos.
+
+Notas honestas:
+- Hacinamiento en URBAN reusa pesos de Lima (Tabla A.9 no especifica
+  pesos urbanos separados). Conservador.
+- `bienes_riqueza`: BCK no lista los 5 items canónicos; usamos TV color,
+  equipo de sonido, computadora/laptop, refrigeradora, lavadora.
+- `CLUSTER_AREA` es provisional; confirmar con SISFOH (2010) o INEI.
+
+### Paso 2 hecho — variables IFH extraídas
+
+`scripts/paso2_build_ifh.py` produce `data/clean/ifh_raw_variables.csv`
+(33,340 hogares × 27 columnas). Mapea cada variable BCK a su código
+ENAHO 2024:
+
+| Variable BCK | Código ENAHO | Categorías |
+|---|---|---|
+| Paredes | P102 | 9 → 8 BCK |
+| Piso | P103 | 7 → 7 BCK (parquet/vinílico/.../tierra) |
+| Techo | P103A | 8 → 7 BCK (concreto/tejas/.../paja) |
+| Agua | P110 | 8 → 7 BCK (dentro/fuera/río/...) |
+| Desagüe | P111A | 7 → 6 BCK |
+| Combustible | P113A | 8 → 6 BCK (electricidad/gas/leña/...) |
+| Electricidad | P1121 | 0/1 → sí/no |
+| Teléfono fijo | P1141 | 0/1 → sí/no |
+| Hacinamiento | MIEPERHO / P104 | continuo → 5 bins BCK |
+| Educación jefe | M03 P301A, filtrado a P203==1 | 12 → 7 BCK |
+| Educación max | M03 P301A, max por hogar | 12 → 5 BCK (rural variant) |
+| Miembros con seguro | M04 P4191-P4198 **excluyendo P4195 (SIS)** | conteo → 5 bins |
+| Bienes riqueza | M18 P612N ∈ {2,4,7,12,13} | conteo → 6 bins |
+| Piso tierra | P103==6 | 0/1 → sí/no |
+
+**Filtro crítico**: M01 trae 44,731 hogares pero ~11K son fantasma
+(RESULT in {3,4,5,6,7} = rechazo/ausente/etc.). Filtramos a 33,340 con
+entrevista válida (RESULT in {1,2} y P102 no-blank).
+
+**Filtro SISFOH crítico** (footnote 2 de BCK 2017): al contar miembros
+con seguro, SE EXCLUYE el SIS (P4195). Esto se respeta en
+`load_m04_seguro()`. Razón: si incluyéramos SIS, la variable IFH se
+volvería endógena a la propia política de aseguramiento que dispara
+SIS en hogares pobres.
+
+### Próximo paso: 3
+
+Asignar cluster geográfico (1-15) a cada hogar. Opciones:
+1. Pedirla a INEI vía contacto de Alexander (1 línea adicional al
+   pedido SISFOH ya pendiente).
+2. Aproximarla con `DOMINIO × AREA` derivado de ENAHO (8 DOMINIOs × 2
+   áreas ≈ 16 grupos, no idéntico pero cercano).
+3. Reconstruirla del documento SISFOH (2010) si está accesible.
+
+Una vez resuelto Paso 3, Paso 4 (calcular IFH) es trivial: tomar las
+categorías ya construidas en Paso 2, mapearlas a pesos según área del
+cluster, sumar, estandarizar a [0, 100] por cluster.
+
+---
+
 ## 5. Qué falta hacer (en orden recomendado)
 
 ### Paso 2 — Limpieza de datos corregida [PRIORITY — para coautora]
