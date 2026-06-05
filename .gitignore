@@ -9,7 +9,6 @@ data/clean/enaho_rdd_main.csv
 data/clean/main_dataset.csv
 data/clean/clean_data.csv
 data/clean/enaho_rdd2_mayores.csv
-data/clean/ifh_raw_variables.csv
 
 # ── Literatura PDF (copyright, no redistribuir) ──────────────────────────
 lit_review/
