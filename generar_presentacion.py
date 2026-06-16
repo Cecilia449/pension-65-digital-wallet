@@ -450,7 +450,7 @@ sub_fs = T([
      cel("29.3%", align=TA_CENTER, color=AZUL, size=12),
      cel("+29.3 pp", bold=True, align=TA_CENTER, color=AZUL, size=12),
      cel("< 0.001 ***", align=TA_CENTER, color=VERDE, size=11)],
-    [cel("Pobreza extrema INEI (±5 años)", size=12),
+    [cel("Pobreza monetaria ENAHO (±5 años)*", size=12),
      cel("0.0%", align=TA_CENTER, size=12),
      cel("42.3%", align=TA_CENTER, color=AZUL, size=12),
      cel("+42.3 pp", bold=True, align=TA_CENTER, color=AZUL, size=12),
@@ -482,12 +482,12 @@ res = T([
      cel("2,331",   align=TA_CENTER, size=11),
      cel("0.135 ***", bold=True, align=TA_CENTER, color=VERDE, size=11),
      cel("−2.8 pp  (n.s., p=0.87)", align=TA_CENTER, color=GRIS_TEXT, size=11)],
-    [cel("Pobreza extrema INEI", size=11),
+    [cel("Pobreza monetaria ENAHO†", size=11),
      cel("±3 años", align=TA_CENTER, size=11),
      cel("310",     align=TA_CENTER, size=11),
      cel("0.158 ***", bold=True, align=TA_CENTER, color=VERDE, size=11),
      cel("+33.5 pp  (p=0.098)*", bold=True, align=TA_CENTER, color=NARANJA, size=11)],
-    [cel("Pobreza extrema INEI", size=11),
+    [cel("Pobreza monetaria ENAHO†", size=11),
      cel("±5 años", align=TA_CENTER, size=11),
      cel("496",     align=TA_CENTER, size=11),
      cel("0.202 ***", bold=True, align=TA_CENTER, color=VERDE, size=11),
@@ -500,6 +500,11 @@ S.append(Paragraph(
     "*** p&lt;0.01  ·  * p&lt;0.10  ·  n.s. = no significativo  ·  "
     "Errores estándar robustos HC1  ·  "
     "Regresión local lineal con pendientes distintas a cada lado del umbral.",
+    NOTA))
+S.append(Paragraph(
+    "† Pobreza monetaria ENAHO (POBREZA=1): clasificación de gasto per cápita calculada "
+    "por INEI. <b>No equivale al criterio SISFOH</b> que usa Pensión 65. "
+    "Se incluye como comparación descriptiva. La submuestra primaria es SISFOH proxy (IFH≤umbral).",
     NOTA))
 S.append(PageBreak())
 
