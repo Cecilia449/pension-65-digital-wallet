@@ -1,0 +1,20 @@
+concepto,columna,dtype,pct_nulos,n_valores_unicos,valores_unicos,estado
+combustible,COMBUSTIBLE,str,0.0%,8,"[' ', '1', '2', '3', '5', '6', '7', '9']",OK
+agua,P110,int64,0.0%,8,"[1, 2, 3, 4, 5, 6, 7, 8]",OK
+paredes,P102,str,0.0%,10,"[' ', '1', '2', '3', '4', '5', '6', '7', '8', '9']",OK
+techo,P102,str,0.0%,10,"[' ', '1', '2', '3', '4', '5', '6', '7', '8', '9']",OK
+piso,P103,str,0.0%,8,"[' ', '1', '2', '3', '4', '5', '6', '7']",OK
+desague,SERVSANIT,int64,0.0%,8,"[1, 2, 3, 4, 5, 6, 7, 9]",OK
+electricidad,ALUMBRADO,str,0.0%,4,"[' ', '1', '2', '3']",OK
+cuartos,P104,str,0.0%,16,"['1', '10', '2', '3', '4', '5', '6', '7', '8', '9']",OK
+miembros,MIEPERHO,int64,0.0%,17,"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",OK
+telefono_fijo,NO ENCONTRADA,-,-,-,-,FALTANTE
+refrigerador,REFRIGERADOR,int64,0.0%,2,"[0, 1]",OK
+tv,TIENE_TV,int64,0.0%,2,"[0, 1]",OK
+smartphone,SMARTPHONE,int64,0.0%,2,"[0, 1]",OK
+seguro_no_sis,NO ENCONTRADA,-,-,-,-,FALTANTE
+educ_nivel,NIVEL_EDUCATIVO,float64,9.4%,13,"[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0, 10.0, 11.0]",OK
+area,AREA,float64,12.0%,2,"[1.0, 2.0]",OK
+departamento,DPTO,int64,0.0%,25,"[1, 2, 3, 4, 5, 6, 7, 8, 15, 22]",OK
+gasto_agua,NO ENCONTRADA,-,-,-,-,FALTANTE
+gasto_electr,NO ENCONTRADA,-,-,-,-,FALTANTE
