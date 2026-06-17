@@ -337,6 +337,18 @@ def phase_1_preprocess():
         else pd.Series(0, index=m05.index)
     ).astype(int)
 
+    m05["BANCO_PRIVADO"] = (
+        ((m05["P558E1_1"].astype(str).str.strip() == "1").astype(int))
+        if "P558E1_1" in m05.columns
+        else pd.Series(0, index=m05.index)
+    ).astype(int)
+
+    m05["BANCO_NACION"] = (
+        ((m05["P558E1_8"].astype(str).str.strip() == "8").astype(int))
+        if "P558E1_8" in m05.columns
+        else pd.Series(0, index=m05.index)
+    ).astype(int)
+
     if "P514" in m05.columns:
         m05["FORMAL"] = (pd.to_numeric(m05["P514"], errors="coerce") == 1).astype(int)
     else:
@@ -350,7 +362,7 @@ def phase_1_preprocess():
     m05_keep = [c for c in (KEYS_PERSON + [
         "TIENE_BILLETERA", "USA_BILLETERA",
         "TIENE_BILLETERA_ALT_E10", "TIENE_BILLETERA_ALT_E6", "USA_BILLETERA_ALT_H6",
-        "BANCO_PREVIO", "FORMAL", "OCUPADO",
+        "BANCO_PREVIO", "BANCO_PRIVADO", "BANCO_NACION", "FORMAL", "OCUPADO",
         "RECIBE_P65_PERSONA",  # tratamiento endógeno fuzzy RDD (P5567A)
     ]) if c in m05.columns]
     m05_p = m05[m05_keep].drop_duplicates(subset=KEYS_PERSON, keep="first")
