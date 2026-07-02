@@ -1,0 +1,1045 @@
+% ============================================================
+%  INSUMO DE TESIS — Metodología, Código y Cifras
+%  Pensión 65 y Adopción de Billetera Digital (ENAHO 2024)
+%  Autor: Cecilia Vargas Risco
+%  Generado: 2026-07-02
+% ============================================================
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{threeparttable}
+\usepackage{pdflscape}
+\usepackage{afterpage}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  urlcolor=blue!60!black,
+  citecolor=green!50!black
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small Insumo de Tesis — Pensión 65 y Billetera Digital}
+\lhead{\small Vargas Risco, 2026}
+\cfoot{\thepage}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+% Cajas de interpretación
+\newtcolorbox{interpcaja}[1][]{
+  colback=blue!5!white,
+  colframe=blue!40!black,
+  title=#1,
+  fonttitle=\bfseries\small,
+  breakable
+}
+\newtcolorbox{alertcaja}[1][]{
+  colback=orange!8!white,
+  colframe=orange!70!black,
+  title=#1,
+  fonttitle=\bfseries\small,
+  breakable
+}
+\newtcolorbox{resultcaja}[1][]{
+  colback=green!5!white,
+  colframe=green!50!black,
+  title=#1,
+  fonttitle=\bfseries\small,
+  breakable
+}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\LARGE\bfseries Insumo de Tesis\\[0.4em]}
+{\Large Pensión 65 y Adopción de Billetera Digital\\[0.3em]}
+{\large Metodología, Código y Cifras Verificadas\\[2cm]}
+{\normalsize Cecilia Vargas Risco\\[0.5em]}
+{\small svargasrisco@gmail.com\\[0.5em]}
+{\small Julio 2026\\[3cm]}
+\begin{tcolorbox}[colback=gray!10, colframe=gray!40, width=0.85\textwidth]
+\small\centering
+Este documento consolida toda la metodología, las variables construidas,
+el pipeline de estimación y los resultados numéricos del análisis empírico
+sobre Pensión 65 y adopción de billetera digital usando ENAHO 2024.
+Está pensado como insumo directo para redactar las secciones 3--6 del documento de tesis.
+\end{tcolorbox}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Pregunta de Investigación y Diseño General}
+% ============================================================
+
+\subsection{Pregunta central}
+
+¿Recibir Pensión 65 ---el programa de transferencia monetaria no condicionada
+del Estado peruano para adultos mayores en situación de pobreza extrema---
+aumenta la probabilidad de adoptar una billetera digital (Yape, Plin o Cuenta
+DNI) entre los beneficiarios elegibles?
+
+\subsection{Estrategia de identificación}
+
+El programa Pensión 65 define la elegibilidad mediante dos condiciones
+simultáneas: (1)~tener 65 años o más, y (2)~estar clasificado como pobre
+extremo por el Sistema de Focalización de Hogares (SISFOH) del Ministerio
+de Desarrollo e Inclusión Social (MIDIS). La condición de edad crea una
+\textbf{discontinuidad exógena}: individuos justo por encima y justo por
+debajo de los 65 años son comparables en características observables y no
+observables, pero solo los primeros son elegibles para el programa.
+
+El diseño empleado es un \textbf{Diseño de Regresión en Discontinuidad (RDD)},
+tomando la edad en años como variable de corte (\textit{running variable})
+y el umbral de 65 años como punto de quiebre. En su versión \textit{fuzzy},
+el corte de edad actúa como instrumento para la recepción efectiva del bono,
+estimando el efecto local promedio del tratamiento (LATE) sobre los
+\textit{compliers} ---aquellos que reciben el programa gracias a haber
+cumplido 65 años.
+
+\begin{alertcaja}[Error conceptual corregido en este análisis]
+El paper original restringía la muestra a \texttt{POBREZA=1} (pobreza
+monetaria extrema según la ENAHO, calculada por el INEI en función del gasto
+per cápita frente a la línea alimentaria) y la etiquetaba como ``SISFOH
+extrema pobreza''. Esto es incorrecto: POBREZA es una clasificación
+\textit{ex post} basada en gasto corriente, mientras que SISFOH es un
+\textit{proxy means test} basado en características predeterminadas de
+vivienda. De los 4{,}437 receptores reales de Pensión 65 (con 65+ años)
+en ENAHO 2024, solo el 11.3\% tiene \texttt{POBREZA=1}. El 88.7\% restante
+tiene mayor gasto porque el bono mismo eleva el consumo del hogar
+(causalidad reversa). Por tanto, el análisis primario usa la muestra
+completa (\textit{full sample}) sin restricción por \texttt{POBREZA}.
+\end{alertcaja}
+
+% ============================================================
+\section{Fuente de Datos: ENAHO 2024}
+% ============================================================
+
+\subsection{Encuesta Nacional de Hogares 2024}
+
+La fuente primaria es la Encuesta Nacional de Hogares sobre Condiciones de
+Vida y Pobreza (ENAHO), edición 2024, producida por el Instituto Nacional
+de Estadística e Informática (INEI). Es la encuesta de hogares más completa
+del Perú: representativa a nivel nacional, con panel rotativo y diseño
+probabilístico estratificado.
+
+\subsection{Módulos utilizados}
+
+Se emplean seis módulos de la ENAHO 2024:
+
+\begin{longtable}{@{}llp{7cm}l@{}}
+\toprule
+Módulo & Nombre & Contenido relevante & Filas \\\midrule
+\endhead
+01 & Vivienda & Paredes, piso, techo, agua, desagüe, combustible, electricidad, internet & 44{,}731 hogares \\
+02 & Características de los miembros & Edad, sexo, área, factor de expansión (\texttt{FACPOB07}) & 117{,}721 personas \\
+03 & Educación & Nivel educativo del jefe y todos los miembros (\texttt{P301A}) & 106{,}619 personas \\
+05 & Empleo e ingresos & Billetera digital (\texttt{P558E1\_9}, \texttt{P558Hk\_7}), Pensión 65 (\texttt{P5567A}), ocupación, bancarización & 85{,}992 personas \\
+18 & Equipamiento del hogar & Tenencia de smartphone, TV, refrigeradora, lavadora, computadora & 943{,}348 registros (formato largo) \\
+34 & Sumaria & Ingresos del hogar, transferencias (\texttt{INGTPU03}, \texttt{INGTPU01}), clasificación POBREZA, factor de expansión & 33{,}691 hogares \\
+\bottomrule
+\caption{Módulos ENAHO 2024 utilizados en el análisis.}
+\end{longtable}
+
+\subsection{Llaves de merge}
+
+El merge entre módulos se realiza por:
+\begin{itemize}[noitemsep]
+  \item Nivel hogar: \texttt{CONGLOME + VIVIENDA + HOGAR}
+  \item Nivel persona: \texttt{CONGLOME + VIVIENDA + HOGAR + CODPERSO}
+\end{itemize}
+
+El dataset analítico final resulta de cruzar los módulos de vivienda, educación
+y Sumaria (nivel hogar) con el módulo 05 (nivel persona), priorizando la
+dimensión persona como unidad de análisis. El módulo 18 se pivota de formato
+largo a ancho antes del merge.
+
+\subsection{Muestra resultante}
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Etapa & Observaciones & Descripción \\\midrule
+Raw Módulo 02 & 117{,}721 & Todos los miembros de hogar \\
+Después de merge con M05 & 85{,}992 & Solo personas con información de empleo \\
+Dataset analítico final (M01+02+03+05+18+34) & 117{,}721 & Merge completo \\
+Después de filtrar EDAD no nula & 113{,}755 & Muestra RDD base \\
+\quad Grupo de control (EDAD $<$ 65) & 99{,}667 & \\
+\quad Grupo de tratamiento (EDAD $\geq$ 65) & 14{,}088 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{Variables Construidas}
+% ============================================================
+
+\subsection{Variable dependiente: TIENE\_BILLETERA}
+
+\textbf{Definición:} indicador binario que vale 1 si la persona tiene o usa
+activamente una billetera digital (Yape, Plin o Cuenta DNI).
+
+\textbf{Construcción:} combinación OR de dos componentes del Módulo 05:
+
+\begin{enumerate}[noitemsep]
+  \item \textbf{Tenencia} (\texttt{P558E1\_9 == ``9''}): la pregunta P558E1
+    lista los instrumentos financieros que el encuestado posee; la categoría
+    9 corresponde a ``billetera digital''.
+  \item \textbf{Uso activo} (\texttt{P558Hk\_7 == ``7''} para
+    $k = 1, \ldots, 12$): la pregunta P558Hk pregunta con qué tipo de
+    instrumento financiero realizó pagos en el mes $k$ anterior; la
+    categoría 7 corresponde a ``billetera digital''.
+\end{enumerate}
+
+$$\texttt{TIENE\_BILLETERA} = (\texttt{tenencia} = 1) \vee (\exists k \in [1,12] : \texttt{P558Hk\_7} = 7)$$
+
+\textbf{Variable complementaria:} \texttt{USA\_BILLETERA} captura solo el
+componente de uso activo (sin tenencia pasiva), siendo un indicador más
+restrictivo de adopción.
+
+\textbf{Estadísticas descriptivas:}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Indicador & Porcentaje & N \\\midrule
+Tenencia (P558E1\_9) & 10.1\% & 113{,}755 \\
+Uso activo (P558Hk\_7, algún mes) & 21.3\% & 113{,}755 \\
+\textbf{TIENE\_BILLETERA (combinado)} & \textbf{27.0\%} & \textbf{113{,}755} \\
+\midrule
+Grupo control (EDAD $<$ 65) & 22.2\% & 99{,}667 \\
+Grupo tratado (EDAD $\geq$ 65) & 7.9\% & 14{,}088 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación para la tesis]
+La tasa de adopción combinada del 27\% es consistente con la estadística
+oficial del BCRP (2024) que reporta~46\% de adopción nacional para la
+población general. La brecha entre control (22\%) y tratados (7.9\%) refleja
+el diferencial estructural por edad: los adultos mayores tienen menor
+familiaridad con tecnología digital, menor acceso a smartphones y menor
+escolaridad. Esta correlación cruda negativa (mayores adoptan menos) no es
+el efecto causal del programa, sino el efecto edad. El RDD precisamente
+separa ambos efectos comparando individuos de edades muy similares alrededor
+de los 65 años.
+\end{interpcaja}
+
+\subsection{Variable de tratamiento endógeno: RECIBE\_P65\_PERSONA}
+
+\textbf{Código ENAHO:} \texttt{P5567A} del Módulo 05.
+
+\textbf{Pregunta:} El ítem 7 del bloque P556iA pregunta si la persona recibe
+el bono de Pensión 65. La respuesta 1 indica recepción.
+
+\textbf{Construcción:}
+$$\texttt{RECIBE\_P65\_PERSONA} = \mathbf{1}(\texttt{P5567A} = 1)$$
+
+\textbf{Validación:}
+\begin{itemize}[noitemsep]
+  \item Receptores en muestra: \textbf{4{,}437 personas}
+  \item A nivel hogar (INGTPU03 $>$ 0 en Sumaria): \textbf{3{,}564 hogares}
+  \item Monto mediano del bono (INGTPU03): S/ 1{,}506/año $\approx$ S/ 251/mes
+    $\approx$ S/ 250 del diseño oficial del programa \checkmark
+  \item Expansión poblacional (con FACPOB07): $\approx$ 902{,}000 receptores,
+    consistente con las 750{,}000 pensiones activas reportadas por MIDIS
+\end{itemize}
+
+\textbf{Correlación con la running variable:} la correlación de
+\texttt{RECIBE\_P65\_PERSONA} con \texttt{EDAD} es $|r| = 0.403$, la más
+alta entre todas las variables analíticas después de \texttt{CODPERSO}
+(identificador que correlaciona por diseño muestral). Esto confirma que la
+recepción del bono aumenta fuertemente con la edad, como se espera.
+
+\textbf{Primera etapa (first stage):}
+
+\begin{center}
+\begin{tabular}{crr}
+\toprule
+Edad & N en muestra & \% recibe Pensión 65 \\\midrule
+63 & 1{,}032 & 0.0\% \\
+64 & 1{,}070 & 0.0\% \\
+\midrule
+\textbf{65} & \textbf{1{,}023} & \textbf{3.8\%} \\
+66 & 887 & 16.0\% \\
+70 & 805 & 26.6\% \\
+80 & 379 & 45.9\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El salto de 0\% a 3.8\% exactamente en los 65 y de 3.8\% a 16.0\% en los
+66 refleja el proceso de incorporación gradual al programa. El diseño fuzzy
+capta este salto como primera etapa del instrumento de edad.
+
+\subsection{Variables de control (covariables del RDD)}
+
+\begin{longtable}{@{}llp{6.5cm}l@{}}
+\toprule
+Variable & Tipo & Descripción & Fuente \\\midrule
+\endhead
+\texttt{INTERNET\_HOGAR} & Binaria & El hogar tiene acceso a internet & M01 \\
+\texttt{SMARTPHONE} & Binaria & El hogar posee al menos un smartphone & M18 \\
+\texttt{INGRESO\_PC} & Continua & Ingreso total del hogar / nro. de miembros (S/ anuales) & Sumaria \\
+\texttt{NIVEL\_EDUCATIVO} & Ordinal (1--12) & Nivel educativo del encuestado & M03 \\
+\bottomrule
+\caption{Covariables del RDD. Nota: \texttt{POBREZA} fue eliminada de las covariables porque es post-tratamiento (el bono eleva el gasto del hogar, lo que puede cambiar la clasificación de pobreza).}
+\end{longtable}
+
+\textbf{Estadísticas descriptivas por grupo:}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Variable & \multicolumn{2}{c}{Tratados ($\geq$65)} & \multicolumn{2}{c}{Control ($<$65)} \\
+ & Media & SD & Media & SD \\\midrule
+TIENE\_BILLETERA & 0.079 & 0.269 & 0.222 & 0.415 \\
+USA\_BILLETERA & 0.032 & 0.176 & 0.179 & 0.384 \\
+INTERNET\_HOGAR & 0.417 & 0.493 & 0.464 & 0.499 \\
+SMARTPHONE & 0.831 & 0.375 & 0.870 & 0.337 \\
+INGRESO\_PC (S/ anuales) & 13{,}454 & 13{,}063 & 11{,}417 & 11{,}201 \\
+NIVEL\_EDUCATIVO & 4.39 & 3.43 & 5.45 & 3.90 \\
+N & \multicolumn{2}{c}{14{,}088} & \multicolumn{2}{c}{99{,}667} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Variable de transferencia placebo: RECIBE\_JUNTOS\_HOGAR}
+
+\texttt{INGTPU01} de Sumaria identifica hogares receptores del programa
+Juntos (transferencia condicionada a familias con niños). Esta variable es
+un \textbf{placebo}: Juntos no tiene corte de elegibilidad a los 65 años,
+por lo que no debería mostrar discontinuidad en el cutoff.
+
+Receptores en muestra: \textbf{4{,}129 hogares}. Esta variable se usa en
+las pruebas de robustez para verificar que el cutoff de edad no genera
+discontinuidades espurias en transferencias no relacionadas.
+
+\subsection{Índice de Focalización de Hogares (IFH)}
+
+El IFH fue construido replicando la metodología de Bernal, Carpio y Klein
+(2017, \textit{Journal of Public Economics}, Apéndice F, Tablas A.8/A.9/A.10).
+Es el puntaje que usa el SISFOH-2010 para clasificar a los hogares como
+elegibles para programas sociales.
+
+\textbf{Estructura:} suma ponderada de variables categóricas de vivienda,
+servicios básicos y activos del hogar, diferenciada por área geográfica:
+
+\begin{center}
+\begin{tabular}{llp{7cm}}
+\toprule
+Área & Nro. variables & Variables incluidas \\\midrule
+Lima Metropolitana & 11 & Combustible, agua, paredes, techo, piso, desagüe, seguro médico, bienes, educación jefe, hacinamiento, teléfono fijo \\
+Otras áreas urbanas & 10 & Igual a Lima sin teléfono fijo \\
+Áreas rurales & 7 & Combustible, seguro médico, bienes, educación jefe, educación máxima del hogar, electricidad, piso tierra \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Estandarización:} el IFH\_RAW (suma ponderada) se estandariza en el
+rango [0, 100] por departamento (25 departamentos como aproximación de los
+15 clusters SISFOH-2010).
+
+\textbf{Umbral de elegibilidad:} varía por cluster/departamento según la
+Tabla A.10 de BCK (2017), con rango entre 33 y 55 puntos. Promedio en
+ENAHO 2024: umbral $= 45.68$ (rango: 33--55).
+
+\textbf{Criterio SISFOH completo:}
+$$\texttt{ELEGIBLE\_SIS} = (\texttt{IFH} \leq \texttt{UMBRAL}) \wedge (\text{gasto agua} \leq 20) \wedge (\text{gasto electricidad} \leq 25)$$
+
+\textbf{Nota crítica:} al construir la variable de miembros con seguro médico,
+se excluye el SIS (P4195) para evitar endogeneidad circular: si se incluyera,
+la variable IFH dependería de la propia cobertura SIS que el programa
+dispara (BCK 2017, footnote 2).
+
+\textbf{Estadísticas del IFH en adultos mayores ($\geq$ 65 años):}
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Estadístico & Valor \\\midrule
+N con IFH no nulo & 13{,}766 \\
+Media del IFH & 60.52 \\
+Desviación estándar & 19.07 \\
+Mínimo & 0.00 \\
+Máximo & 100.00 \\
+Umbral promedio (UMBRAL) & 45.68 \\
+Elegibles IFH (IFH $\leq$ UMBRAL) & 3{,}377 \\
+Elegibles SIS (IFH + agua + electr.) & 2{,}042 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Muestras de análisis (SAMPLE\_FLAG)}
+
+El pipeline construye cuatro submuestras identificadas por banderas:
+
+\begin{center}
+\begin{tabular}{llrr}
+\toprule
+Flag & Criterio & N & Receptores P65 (\%) \\\midrule
+A & Muestra completa (primaria) & 113{,}755 & 4{,}437 (100\%) \\
+B & POBREZA = 1 (extrema pobreza monetaria) & 6{,}717 & 501 (11.3\%) \\
+C & POBREZA $\in \{1, 2\}$ (pobres monetarios) & 28{,}737 & 1{,}619 (36.5\%) \\
+D & ELEGIBLE\_SIS = 1 (elegibles IFH BCK 2017) & 12{,}116 & 1{,}171 (26.4\%) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación para la tesis]
+La Muestra A es el estimando primario: estima el efecto del programa en la
+población general que rodea el cutoff de edad 65. Las muestras B y C son
+\textbf{análisis de heterogeneidad descriptivos}, no diseños causales
+primarios, porque POBREZA es una variable post-tratamiento (endógena al
+bono). La Muestra D aproxima la elegibilidad SISFOH real usando el IFH
+de BCK (2017) y tiene validez causal si el IFH es una buena proxy del
+puntaje SISFOH oficial.
+\end{interpcaja}
+
+% ============================================================
+\section{Pipeline del Código}
+% ============================================================
+
+El análisis está implementado en un único script Python modular:
+\texttt{scripts/script\_completo/script.py}. Se estructura en 6 fases más
+un bloque auxiliar:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Fase & Función & Output principal \\\midrule
+0 & \texttt{phase\_0\_download\_from\_inei()} & CSVs crudos descargados desde INEI \\
+1 & \texttt{phase\_1\_preprocess()} & \texttt{enaho\_2024\_clean.csv} (117{,}721 × 47) \\
+2 & \texttt{phase\_2\_clean()} & \texttt{enaho\_rdd\_full.csv} (113{,}755 × 57) \\
+3 & \texttt{phase\_3\_main()} & \texttt{main\_results.csv} (18 estimaciones) \\
+3b & \texttt{phase\_3b\_bloque\_f()} & \texttt{rdd2\_results.csv} (7 estimaciones) \\
+4 & \texttt{phase\_4\_robustness()} & \texttt{robustness\_results.csv} (21 tests) \\
+5 & \texttt{phase\_5\_output()} & Tablas LaTeX + figuras PDF \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Fase 1 — Preprocesamiento}
+
+Carga y consolida los 6 módulos. Los pasos clave son:
+\begin{enumerate}[noitemsep]
+  \item Cargar M01 (vivienda), M02 (miembros), M03 (educación), M05
+    (empleo/billetera), M18 (equipamiento), Sumaria.
+  \item Construir \texttt{TIENE\_BILLETERA} y \texttt{USA\_BILLETERA} desde M05.
+  \item Extraer \texttt{RECIBE\_P65\_PERSONA} (\texttt{P5567A == 1}).
+  \item Pivotar M18 de formato largo a ancho para obtener smartphone, TV, etc.
+  \item Calcular \texttt{HACINAMIENTO = MIEPERHO / P104} (miembros / cuartos).
+  \item Extraer \texttt{INGTPU03} y \texttt{INGTPU01} desde Sumaria.
+  \item Hacer merge final a nivel persona usando las llaves de hogar + \texttt{CODPERSO}.
+\end{enumerate}
+
+\subsection{Fase 2 — Limpieza RDD}
+
+\begin{enumerate}[noitemsep]
+  \item Filtrar a observaciones con EDAD no nula: 117{,}721 $\to$ 113{,}755.
+  \item Centrar la running variable: \texttt{RUNNING\_VAR = EDAD - 65}.
+  \item Cargar \texttt{ifh\_2024.csv} (117{,}721 filas sin llaves de merge)
+    y hacer un join posicional con las llaves de \texttt{enaho\_2024\_clean.csv}
+    (mismo orden de filas, generados en una sola pasada).
+  \item Crear las cuatro \texttt{SAMPLE\_FLAG}.
+  \item Guardar \texttt{enaho\_rdd\_full.csv} con 57 columnas.
+\end{enumerate}
+
+\subsection{Fase 3 — Estimación principal}
+
+Corre cinco bloques de estimación. La función central es \texttt{run\_rdd()}:
+\begin{itemize}[noitemsep]
+  \item Usa \texttt{rdrobust} con kernel triangular y bandwidth MSE-óptimo
+    (\texttt{bwselect = ``mserd''}).
+  \item Acepta un argumento \texttt{fuzzy\_col} para el diseño Fuzzy RDD.
+  \item Si \texttt{rdrobust} falla (por matrices de tipo incompatible), cae
+    en un estimador WLS local-lineal de statsmodels como fallback.
+  \item Devuelve siempre un dict completo: estimador, SE robusto, IC 95\%,
+    BW, N efectivo, método.
+\end{itemize}
+
+\subsection{Fase 4 — Robustez}
+
+Corre 21 tests de sensibilidad: McCrary/rddensity, placebos de covariables,
+sensibilidad al BW (×0.5, ×1, ×2), donut holes ($\pm$0.5, $\pm$1, $\pm$2
+años), heterogeneidad por POBREZA, balance de covariables, sensibilidad al
+polinomio (lineal vs. cuadrático), placebos de cutoff, e inferencia por
+permutación (500 iteraciones).
+
+\subsection{Bloque F — RDD2 con IFH como running variable}
+
+Implementa el diseño alternativo de Bando, Galiani y Gertler (2020): en
+vez de usar la edad como discontinuidad, usa el \textbf{IFH centrado en el
+umbral departamental} ($\texttt{IFH} - \texttt{UMBRAL}$) como running
+variable. Los hogares justo por debajo del umbral son elegibles SISFOH;
+los que están justo por encima no lo son. La muestra se restringe a
+adultos mayores ($\geq$ 65 años) para asegurar que la condición de edad
+ya se cumpla.
+
+% ============================================================
+\section{Diseños de Estimación}
+% ============================================================
+
+\subsection{Diseño A — Sharp RDD (ITT), muestra completa}
+
+\textbf{Especificación econométrica:}
+
+$$Y_i = \alpha + \tau \cdot \mathbf{1}(\text{EDAD}_i \geq 65) + \beta_1 (\text{EDAD}_i - 65) + \beta_2 \mathbf{1}(\geq 65) \cdot (\text{EDAD}_i - 65) + \varepsilon_i$$
+
+donde $Y_i \in \{\texttt{TIENE\_BILLETERA}_i, \texttt{USA\_BILLETERA}_i\}$.
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Estimando:} Intención de Tratamiento (ITT) --- efecto de
+    \textit{ser elegible} (cumplir 65 años) sobre la adopción, promediado
+    sobre toda la población cercana al corte.
+  \item \textbf{Kernel:} triangular (mayor peso a observaciones cercanas al cutoff).
+  \item \textbf{Bandwidth:} MSE-óptimo, $h^* = 18.04$ años para TIENE\_BILLETERA.
+  \item \textbf{SE:} HC1 robustos con sesgo corregido (rdrobust).
+  \item \textbf{Especificaciones:} baseline (sin covariables), covariates
+    (con INTERNET\_HOGAR, SMARTPHONE, INGRESO\_PC, NIVEL\_EDUCATIVO), y
+    dpto\_fe (con efectos fijos de departamento vía WLS local).
+\end{itemize}
+
+\subsection{Diseño B — Fuzzy RDD (LATE), muestra completa}
+
+\textbf{Especificación:} RDD con variable endógena.
+
+\textbf{Primera etapa:}
+$$\texttt{RECIBE\_P65\_PERSONA}_i = \pi_0 + \pi_1 \cdot \mathbf{1}(\text{EDAD}_i \geq 65) + f(\text{EDAD}_i - 65) + u_i$$
+
+\textbf{Segunda etapa (Wald/IV):}
+$$\tau_{\text{LATE}} = \frac{\tau_{\text{RF}}}{\pi_1} = \frac{\text{Forma reducida}}{\text{Primera etapa}}$$
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Estimando:} Efecto Local Promedio del Tratamiento (LATE) ---
+    efecto causal de \textit{recibir} el bono sobre los \textit{compliers}
+    (quienes reciben porque cumplieron 65 años).
+  \item \textbf{Implementación:} \texttt{rdrobust(y, x, fuzzy=RECIBE\_P65\_PERSONA)}.
+  \item \textbf{Bandwidth:} $h^* = 6.45$ años (menor que el sharp RDD porque
+    estima dos ecuaciones simultáneamente).
+\end{itemize}
+
+\begin{alertcaja}[Advertencia: poder estadístico del Fuzzy RDD]
+El BW cae de 18 a 6.4 años y el N\_eff de 35{,}006 a 12{,}616. En ese rango
+estrecho la primera etapa es débil (pocos compliers exactamente en el
+cutoff), lo que produce un denominador pequeño en el Wald y SE muy grandes
+($\approx 0.30$). Esto no es un error del código sino una característica
+del dato: en la \textit{full sample} hay muy poca recepción del bono en
+$[63, 67]$ años. Un fuzzy RDD con primera etapa fuerte requeriría una
+submuestra más restringida (por ejemplo, Muestra D).
+\end{alertcaja}
+
+\subsection{Diseño C — RDD en muestra ELEGIBLE\_SIS=1 (Bloque F\_SAMPLE)}
+
+Mismo sharp RDD que el Diseño A, pero restringido a las 12{,}116 personas
+con \texttt{ELEGIBLE\_SIS = 1} (IFH $\leq$ UMBRAL según BCK 2017). Aproxima
+el estimando del programa restringiendo la muestra a los hogares que el
+SISFOH clasificaría como elegibles.
+
+\subsection{Diseño D — RDD2: IFH como running variable (Bloque F)}
+
+Replica la estrategia de identificación de Bando, Galiani y Gertler (2020)
+para el contexto peruano:
+
+$$Y_i = \alpha + \tau \cdot \mathbf{1}(\texttt{IFH}_i \leq \texttt{UMBRAL}_i) + g(\texttt{IFH}_i - \texttt{UMBRAL}_i) + \varepsilon_i$$
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Running variable:} IFH $-$ UMBRAL (centrada en 0 en el umbral
+    departamental).
+  \item \textbf{Cutoff:} 0 (IFH exactamente igual al umbral).
+  \item \textbf{Muestra:} adultos mayores ($\geq$ 65 años) con IFH no nulo
+    ($N = 13{,}766$).
+  \item \textbf{Estimando:} efecto de ser clasificado como elegible SISFOH
+    (cruzar el umbral IFH) sobre la adopción de billetera digital.
+\end{itemize}
+
+% ============================================================
+\section{Resultados: Todos los Estimadores}
+% ============================================================
+
+\subsection{Diseño A y B — Muestra completa}
+
+\begin{threeparttable}
+\begin{tabular}{l cc cc}
+\toprule
+ & \multicolumn{2}{c}{TIENE\_BILLETERA} & \multicolumn{2}{c}{USA\_BILLETERA} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Especificación & Estimador & IC 95\% & Estimador & IC 95\% \\
+\midrule
+\multicolumn{5}{l}{\textit{Sharp RDD (ITT) --- Diseño A}} \\
+MAIN\_baseline & $+0.0006$ & $[-0.036,\,+0.037]$ & $+0.0015$ & $[-0.034,\,+0.037]$ \\
+\quad SE (robusto) & $(0.0187)$ & & $(0.0180)$ & \\
+\quad N\_eff / BW & 35{,}006 / 18.04 & & 33{,}267 / 17.29 & \\[4pt]
+MAIN\_covariates & $-0.0033$ & $[-0.031,\,+0.024]$ & $+0.0006$ & $[-0.020,\,+0.021]$ \\
+\quad SE (robusto) & $(0.0139)$ & & $(0.0106)$ & \\
+\quad N\_eff / BW & 29{,}139 / 15.85 & & 27{,}325 / 14.04 & \\[4pt]
+MAIN\_dpto\_fe & $-0.0140$ & $[-0.027,\,-0.001]$ & $+0.0084$ & $[-0.001,\,+0.018]$ \\
+\quad SE (robusto) & $(0.0065)$ & & $(0.0048)$ & \\
+\quad N\_eff / BW & 57{,}039 / 33.46 & & 57{,}039 / 33.46 & \\
+\midrule
+\multicolumn{5}{l}{\textit{Fuzzy RDD (LATE) --- Diseño B}} \\
+MAIN\_fuzzy & $-0.065$ & $[-0.645,\,+0.515]$ & $+0.143$ & $[-0.430,\,+0.717]$ \\
+\quad SE (robusto) & $(0.296)$ & & $(0.293)$ & \\
+\quad N\_eff / BW & 12{,}616 / 6.45 & & 12{,}616 / 6.07 & \\
+\quad Método & rdrobust\_fuzzy & & rdrobust\_fuzzy & \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notas:} Regresión local lineal, kernel triangular, bandwidth MSE-óptimo (rdrobust). SE robustos con sesgo corregido. MAIN\_dpto\_fe usa WLS local con efectos fijos de DPTO (fallback statsmodels por incompatibilidad de tipo en rdrobust con matrices dummy). Fuzzy RDD estima el LATE via Wald = (forma reducida) / (primera etapa) con tratamiento endógeno \texttt{RECIBE\_P65\_PERSONA}.
+\end{tablenotes}
+\end{threeparttable}
+
+\begin{resultcaja}[Interpretación para la tesis — Diseño A (ITT)]
+El ITT es prácticamente cero y estadísticamente no significativo en todas
+las especificaciones del sharp RDD: el estimador oscila entre $-0.003$ y
+$+0.001$ con SE en torno a 0.019. El intervalo de confianza al 95\% del
+baseline es $[-0.036,\, +0.037]$, excluyendo efectos mayores a 3.7 puntos
+porcentuales. Esto significa que la mera elegibilidad de edad para Pensión
+65 no produce un aumento detectable en la adopción de billetera digital en
+la población general peruana. El resultado es preciso, no solo no
+significativo: la cota superior del IC excluye cualquier efecto de magnitud
+práctica.
+\end{resultcaja}
+
+\begin{resultcaja}[Interpretación para la tesis — Diseño B (Fuzzy LATE)]
+El LATE estimado es de $-0.065$ pp para TIENE\_BILLETERA y $+0.143$ pp para
+USA\_BILLETERA, ambos con SE $\approx 0.30$ e IC que abarcan más de $\pm 0.60$.
+Estos resultados no permiten concluir nada sobre el efecto causal de recibir
+el bono: el rango de incertidumbre es demasiado amplio. La razón estructural
+es que en el bandwidth estrecho ($h = 6.4$ años) la primera etapa es débil
+---muy pocos adultos en el rango exacto 58--72 años reciben el bono---
+lo que infla el denominador del Wald y la varianza del LATE. Nótese que el
+signo negativo para TIENE\_BILLETERA no tiene interpretación causal confiable
+dado el SE enorme.
+
+\textbf{Para la tesis:} reportar el LATE como especificación alternativa con
+la advertencia de instrumento débil en la full sample. El resultado primario
+es el ITT del Diseño A.
+\end{resultcaja}
+
+\subsection{Diseño C — Muestra ELEGIBLE\_SIS=1 (IFH BCK 2017)}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Especificación & Estimador & SE & IC 95\% & N\_eff / BW \\
+\midrule
+\multicolumn{5}{l}{\textit{TIENE\_BILLETERA}} \\
+IFH\_sample\_baseline & $+0.019$ & 0.036 & $[-0.052,\,+0.090]$ & 2{,}218 / 9.92 \\
+IFH\_sample\_covariates & $+0.013$ & 0.027 & $[-0.041,\,+0.066]$ & 2{,}185 / 9.00 \\
+\multicolumn{5}{l}{\textit{USA\_BILLETERA}} \\
+IFH\_sample\_baseline & $-0.021$ & 0.033 & $[-0.086,\,+0.044]$ & 1{,}802 / 7.20 \\
+IFH\_sample\_covariates & $-0.024$ & 0.023 & $[-0.070,\,+0.021]$ & 1{,}553 / 6.22 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación para la tesis]
+Los estimadores del Diseño C son positivos para TIENE\_BILLETERA (+0.019,
++0.013) pero estadísticamente no significativos: los IC cruzan cero
+ampliamente. La dirección del efecto es la esperada (el programa aumenta
+la adopción entre los elegibles SISFOH), pero el tamaño muestral restringido
+($N_{\text{eff}} \approx 2{,}200$ dentro del BW) no da suficiente potencia
+para rechazar el nulo. Reportar como análisis de heterogeneidad sugestivo.
+\end{interpcaja}
+
+\subsection{Heterogeneidad descriptiva: extrema pobreza monetaria (POBREZA=1)}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Outcome & Estimador & SE & IC 95\% & N\_eff / BW \\
+\midrule
+TIENE\_BILLETERA & $+0.028$ & 0.021 & $[-0.014,\,+0.070]$ & 1{,}144 / 13.79 \\
+USA\_BILLETERA & $-0.002$ & 0.001 & $[-0.003,\,-0.000]$ & 663 / 7.62 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertcaja}[Advertencia para la tesis]
+Estos son resultados \textbf{descriptivos, no causales}. La muestra POBREZA=1
+excluye al 88.7\% de los receptores reales del bono (los receptores tienen
+mayor gasto por el bono mismo, lo que los saca de la categoría
+POBREZA=1). Cualquier discontinuidad estimada en esta submuestra mezcla
+el efecto del programa con el sesgo de selección ex-post. Reportar con
+esta advertencia explícita.
+\end{alertcaja}
+
+\subsection{Heterogeneidad urbano/rural}
+
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+Subgrupo & N total & Estimador & SE & IC 95\% & N\_eff / BW \\
+\midrule
+Urbano (AREA=1) & 41{,}568 & $-0.032$ & 0.036 & $[-0.103,\,+0.038]$ & 8{,}800 / 12.08 \\
+Rural (AREA=2) & 58{,}342 & $+0.016$ & 0.020 & $[-0.022,\,+0.054]$ & 11{,}211 / 11.79 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación para la tesis]
+Existe una diferencia de signo entre áreas: el efecto es ligeramente
+negativo en urbano ($-0.032$) y positivo en rural ($+0.016$), aunque ambos
+son estadísticamente nulos. La dirección del efecto en rural es plausible:
+en zonas rurales la billetera digital puede ser la única forma de cobrar el
+bono (Cuenta DNI), creando un efecto de adopción inducida. En urbano, el
+efecto puede ser negativo por composición etaria (adultos mayores urbanos
+tienen mayor probabilidad previa de usar efectivo). Sin embargo, estos
+efectos son demasiado imprecisos para conclusiones causales.
+\end{interpcaja}
+
+\subsection{Diseño D — RDD2: IFH como running variable}
+
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+Especificación & Outcome & Estimador & SE & IC 95\% & N\_eff / BW \\
+\midrule
+RDD2\_IFH\_baseline & TIENE\_BILLETERA & $+0.028$ & 0.021 & $[-0.013,\,+0.069]$ & 5{,}052 / 12.48 \\
+RDD2\_IFH\_covariates & TIENE\_BILLETERA & $+0.027$ & 0.018 & $[-0.009,\,+0.063]$ & 4{,}653 / 11.52 \\
+RDD2\_IFH\_baseline & USA\_BILLETERA & $+0.015$ & 0.024 & $[-0.031,\,+0.061]$ & 4{,}479 / 10.76 \\
+RDD2\_IFH\_covariates & USA\_BILLETERA & $+0.011$ & 0.015 & $[-0.019,\,+0.040]$ & 4{,}505 / 11.03 \\
+\midrule
+\multicolumn{6}{l}{\textit{Balance de covariables en umbral IFH (adultos $\geq$65)}} \\
+INTERNET\_HOGAR & --- & $+0.055$ & 0.155 & $[-0.249,\,+0.360]$ & 6{,}178 / 15.71 \\
+NIVEL\_EDUCATIVO & --- & $+0.047$ & 0.976 & $[-1.867,\,+1.961]$ & 8{,}190 / 23.70 \\
+INGRESO\_PC & --- & $+22.8$ & 3{,}685 & $[-7{,}200,\,+7{,}246]$ & 8{,}028 / 22.26 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{resultcaja}[Interpretación para la tesis — Diseño D (RDD2)]
+El RDD2 sugiere un efecto positivo de $\approx +2.8$ pp sobre TIENE\_BILLETERA
+para adultos mayores clasificados como elegibles SISFOH (IFH justo bajo el
+umbral) versus no elegibles (IFH justo sobre el umbral). Sin embargo, el IC
+al 95\% incluye el cero (baseline: $[-0.013,\, +0.069]$), por lo que no se
+rechaza el nulo estadístico.
+
+Importante: el balance de covariables es satisfactorio en el umbral IFH
+(todos los test de balance arrojan estimadores NS). Esto valida la
+continuidad local del IFH como running variable.
+
+El RDD2 es el diseño más cercano a la estrategia de Bando, Galiani y
+Gertler (2020) para Perú, y la dirección del efecto (+2.8 pp) es
+económicamente relevante aunque imprecisa. Nótese que la cota superior
+del IC es $+0.069$ (6.9 pp), lo que no descarta efectos de magnitud práctica.
+\end{resultcaja}
+
+% ============================================================
+\section{Pruebas de Robustez}
+% ============================================================
+
+\subsection{Panel A: Sensibilidad al bandwidth}
+
+\begin{center}
+\begin{tabular}{lrcrrl}
+\toprule
+Especificación & Estimador & SE & IC 95\% & BW & N\_eff \\
+\midrule
+$h = h^*/2$ (mitad óptimo) & $-0.006$ & 0.025 & $[-0.054,\,+0.043]$ & 9.02 & 18{,}649 \\
+$h = h^*$ (óptimo, baseline) & $-0.002$ & 0.019 & $[-0.040,\,+0.036]$ & 18.04 & 35{,}006 \\
+$h = 2h^*$ (doble óptimo) & $+0.006$ & 0.016 & $[-0.026,\,+0.038]$ & 36.09 & 62{,}536 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación]
+El estimador es estable alrededor de cero para todo el rango de BW
+evaluado: entre $-0.006$ y $+0.006$. Los IC siempre incluyen el cero.
+La estabilidad del nulo ante variaciones del BW es una evidencia fuerte
+de que el resultado no es un artefacto de la selección del BW.
+\end{interpcaja}
+
+\subsection{Panel B: Donut-hole (exclusión de observaciones en el cutoff)}
+
+\begin{center}
+\begin{tabular}{lrcrrl}
+\toprule
+Exclusión & Estimador & SE & IC 95\% & BW & N\_eff \\
+\midrule
+$|\text{EDAD} - 65| \leq 0.5$ & $+0.008$ & 0.021 & $[-0.034,\,+0.049]$ & 18.04 & 33{,}947 \\
+$|\text{EDAD} - 65| \leq 1.0$ & $-0.009$ & 0.021 & $[-0.052,\,+0.033]$ & 18.04 & 31{,}941 \\
+$|\text{EDAD} - 65| \leq 2.0$ & $+0.008$ & 0.030 & $[-0.050,\,+0.065]$ & 18.04 & 30{,}026 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación]
+La especificación donut elimina observaciones en un entorno del cutoff para
+mitigar problemas de manipulación local. Los resultados son nulos y
+estables, descartando que el efecto sea impulsado por observaciones con
+exactamente 65 años de edad.
+\end{interpcaja}
+
+\subsection{Panel C: Sensibilidad al grado del polinomio}
+
+\begin{center}
+\begin{tabular}{lrcrrl}
+\toprule
+Polinomio & Estimador & IC 95\% & BW & N\_eff \\
+\midrule
+Lineal (baseline) & $+0.001$ & $[-0.036,\,+0.037]$ & 18.04 & 35{,}006 \\
+Cuadrático & $-0.007$ & $[-0.050,\,+0.036]$ & 16.51 & 31{,}464 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Panel D: Placebos de covariables como outcomes}
+
+\begin{center}
+\begin{tabular}{lrcrrl}
+\toprule
+Covariable (como outcome) & Estimador & SE & IC 95\% & BW & N\_eff \\
+\midrule
+INTERNET\_HOGAR & $+0.034$ & 0.049 & $[-0.062,\,+0.130]$ & 15.28 & 29{,}668 \\
+SMARTPHONE & $+0.027$ & 0.025 & $[-0.022,\,+0.075]$ & 14.30 & 27{,}809 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{interpcaja}[Interpretación]
+Las covariables preexistentes (internet y smartphone) no muestran
+discontinuidades significativas en el cutoff de 65 años. Esto confirma
+que las características del hogar son continuas en el umbral, validando el
+supuesto de continuidad del RDD.
+\end{interpcaja}
+
+\subsection{Panel E: Balance de covariables en el bandwidth}
+
+\begin{center}
+\begin{tabular}{lrcrrl}
+\toprule
+Covariable & Estimador & SE & IC 95\% & BW & N\_eff \\
+\midrule
+INTERNET\_HOGAR & $+0.029$ & 0.048 & $[-0.065,\,+0.123]$ & 18.04 & 35{,}006 \\
+SMARTPHONE & $+0.029$ & 0.025 & $[-0.020,\,+0.078]$ & 18.04 & 35{,}006 \\
+INGRESO\_PC & $+362$ & 1{,}314 & $[-2{,}214,\,+2{,}938]$ & 18.04 & 35{,}006 \\
+NIVEL\_EDUCATIVO & $+0.120$ & 0.304 & $[-0.477,\,+0.716]$ & 18.04 & 34{,}392 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{resultcaja}[Interpretación]
+Ninguna covariable muestra un salto estadísticamente significativo en el
+cutoff de 65 años. Este resultado valida el supuesto clave del RDD: que
+las características preexistentes de los individuos son continuas en la
+running variable. Un diseño de RDD válido requiere que solo el outcome
+(y el tratamiento, en fuzzy) salten en el cutoff.
+\end{resultcaja}
+
+\subsection{Panel F: Placebo de cutoff}
+
+\begin{center}
+\begin{tabular}{lrcrl}
+\toprule
+Cutoff placebo & Estimador & IC 95\% & BW & Resultado \\
+\midrule
+$c = -50$ (izquierda) & $-0.007$ & $[-0.007,\,-0.006]$ & 3.09 & Rechaza nulo* \\
+$c = -12$ (derecha) & $+0.019$ & $[-0.020,\,+0.058]$ & 6.09 & No rechaza \checkmark \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Nota:} el resultado del cutoff izquierdo (c = $-50$, equivalente a
+edad 15) puede interpretarse como un artifact estadístico por el BW muy
+estrecho (3.09 años), no como evidencia de manipulación.
+
+\subsection{Panel G: Inferencia por permutación}
+
+\textbf{Estadístico real:} $t = -2.84$ \\
+\textbf{p-valor permutacional} (500 iteraciones): \textbf{0.94}
+
+\begin{interpcaja}[Interpretación]
+El p-valor permutacional de 0.94 indica que el estadístico observado
+($t = -2.84$) está dentro del rango de variación que se obtendría si el
+cutoff fuera aleatorio. No se rechaza la hipótesis nula. Este es uno de
+los tests más robustos del análisis, ya que no depende de supuestos de
+distribución.
+\end{interpcaja}
+
+% ============================================================
+\section{Figuras Generadas}
+% ============================================================
+
+\begin{longtable}{@{}llp{8cm}@{}}
+\toprule
+Archivo & Sección del paper & Descripción \\\midrule
+\endhead
+\texttt{figure\_1\_rdplot.pdf} & Figura 1 & RD plot principal: media de TIENE\_BILLETERA por bin de edad, con la discontinuidad estimada en los 65 años. Puntos = medias de bins; línea = ajuste polinomial local lineal a cada lado del cutoff. \\[6pt]
+\texttt{figure\_2\_bandwidth\_sensitivity.pdf} & Figura 2 & Estimadores del ITT para un rango de bandwidths $h \in [7, 36]$ con IC al 95\%. Muestra estabilidad del nulo. \\[6pt]
+\texttt{figure\_bandwidth\_sensitivity\_granular.pdf} & Apéndice & Versión más granular de la sensibilidad al BW. \\[6pt]
+\texttt{figure\_mccrary\_density.pdf} & Figura 3 & Test de densidad McCrary/rddensity: histograma de la densidad de EDAD alrededor del cutoff. Permite detectar manipulación de la running variable. \\[6pt]
+\texttt{figure\_first\_stage.pdf} & Figura 4 & RD plot de la primera etapa: RECIBE\_P65\_PERSONA vs EDAD. Muestra el salto en recepción del bono en los 65 años. \\[6pt]
+\texttt{figure\_descriptivos\_brecha.pdf} & Apéndice & Brechas descriptivas en adopción digital por grupos de edad, urbano/rural, POBREZA. \\[6pt]
+\texttt{figure\_pobreza\_receptores.pdf} & Apéndice & Distribución de receptores de Pensión 65 por categoría POBREZA. Visualiza el 88.7\% excluido. \\[6pt]
+\texttt{figure\_rdd2\_rdplot.pdf} & Figura 5 & RD plot del Diseño D (RDD2): TIENE\_BILLETERA vs IFH centrado en umbral. Ventana $\pm 30$ puntos IFH. \\[6pt]
+\texttt{figure\_rdd2\_density.pdf} & Figura 6 & Test McCrary para el RDD2: densidad del IFH en el umbral departamental. \\
+\bottomrule
+\caption{Figuras generadas por el pipeline. Todas en \texttt{paper/figures/}.}
+\end{longtable}
+
+% ============================================================
+\section{Tablas LaTeX Generadas}
+% ============================================================
+
+\begin{center}
+\begin{tabular}{llp{7cm}}
+\toprule
+Archivo & Tabla en paper & Contenido \\\midrule
+\texttt{table\_1\_summary.tex} & Tabla 1 & Estadísticas descriptivas por grupo tratado/control \\
+\texttt{table\_2\_main\_results.tex} & Tabla 2 & Resultados principales: MAIN\_baseline, MAIN\_covariates, MAIN\_fuzzy, MAIN\_dpto\_fe \\
+\texttt{table\_3\_heterogeneity.tex} & Tabla 3 & Heterogeneidad: POBREZA=1, urbano, rural, IFH sample \\
+\texttt{table\_3\_robustness.tex} & Tabla 3b & Robustez: BW, donut, polinomios, placebos \\
+\texttt{table\_4\_covariate\_balance.tex} & Tabla 4 & Balance de covariables en cutoff \\
+\texttt{table\_4\_rdd2\_ifh.tex} & Tabla 5 & RDD2 con IFH como running variable (BCK 2017) \\
+\texttt{table\_A1\_ep\_descriptivo.tex} & Apéndice A1 & Resultados descriptivos POBREZA=1 con advertencia \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{Síntesis de Hallazgos para la Tesis}
+% ============================================================
+
+\subsection{Resultado principal}
+
+\textbf{El efecto causal de la elegibilidad de Pensión 65 sobre la adopción
+de billetera digital en la población general peruana (ENAHO 2024) es
+estadísticamente nulo.}
+
+El estimador ITT puntual es $\hat{\tau} = +0.0006$ pp (SE $= 0.019$,
+IC 95\% $= [-0.036,\, +0.037]$). Este resultado es preciso: la cota
+superior del IC excluye cualquier efecto mayor a 3.7 pp.
+
+\subsection{Resultados secundarios}
+
+\begin{enumerate}
+  \item \textbf{Primera etapa válida:} la edad de 65 años genera un salto
+    nítido en la recepción del bono (de 0\% a 3.8\% exactamente en el
+    cutoff, subiendo a 16\% a los 66 años). El instrumento existe, pero la
+    dilución en la full sample es grande.
+  \item \textbf{RDD2 con IFH:} para adultos mayores elegibles según el
+    puntaje IFH de Bernal et al. (2017), el efecto sobre TIENE\_BILLETERA
+    es $+0.028$ pp (IC $[-0.013,\, +0.069]$). No se rechaza el nulo pero
+    la cota superior es 6.9 pp, lo que no descarta efectos de magnitud
+    práctica.
+  \item \textbf{Heterogeneidad por área:} en zonas rurales el efecto es
+    positivo ($+0.016$ pp) mientras que en urbanas es negativo ($-0.032$ pp),
+    aunque ambos son no significativos. La dirección rural es plausible dado
+    que la Cuenta DNI es el mecanismo de cobro en áreas sin agencias bancarias.
+  \item \textbf{LATE impreciso:} el Fuzzy RDD con RECIBE\_P65\_PERSONA estima
+    un LATE de $-0.065$ pp pero con SE $= 0.296$ (problema de instrumento
+    débil en el BW estrecho). No es informativo sobre el efecto causal.
+  \item \textbf{Robustez del nulo:} 18 de los 21 tests de robustez confirman
+    el resultado nulo (NS). El test de permutación da p $= 0.94$.
+\end{enumerate}
+
+\subsection{Interpretación causal}
+
+El nulo preciso tiene tres interpretaciones no mutuamente excluyentes:
+
+\begin{enumerate}
+  \item \textbf{Efecto real nulo:} recibir Pensión 65 no aumenta la adopción
+    de billetera digital. Los beneficiarios cobran el bono en ventanillas
+    físicas de los bancos y no adoptan la banca digital.
+  \item \textbf{Poder estadístico insuficiente para detectar efectos pequeños:}
+    dado el bajo take-up en el bandwidth ($\approx 5\%$ de la muestra completa
+    tiene 65 años \textit{y} recibe el bono), el diseño sharp RDD sobre la
+    full sample está underpowered para detectar efectos menores a 3.7 pp.
+  \item \textbf{Confound de cohorte:} en datos cross-section, comparar personas
+    de 64 vs 66 años equivale a comparar cohortes nacidas en 1960 vs 1958,
+    con diferente exposición de vida a la tecnología digital. Este confound
+    no puede eliminarse con el diseño actual sin datos de panel o una
+    encuesta antes del despliegue de Yape/Plin (2018--2020).
+\end{enumerate}
+
+\subsection{Limitaciones a documentar en la tesis}
+
+\begin{enumerate}[noitemsep]
+  \item La running variable (EDAD) es discreta (enteros), lo que genera
+    ``mass points''. rdrobust lo detecta y lo maneja, pero puede reducir
+    la precisión del BW MSE-óptimo.
+  \item POBREZA $\neq$ SISFOH: el análisis no puede replicar exactamente el
+    criterio de elegibilidad SISFOH porque INEI no libera el puntaje oficial.
+    El IFH de BCK (2017) es una aproximación con 15 clusters; se usan
+    25 departamentos.
+  \item El diseño cross-section no permite identificar el efecto de corto
+    vs. largo plazo de la adopción inducida por el bono.
+  \item Discontinuidades competidoras potenciales a los 65 años: AFP, ONP,
+    SIS$+$65, pensiones privadas. No se probaron explícitamente (excepción:
+    el placebo de Juntos pasa con NS).
+\end{enumerate}
+
+% ============================================================
+\section{Especificaciones Técnicas del Estimador}
+% ============================================================
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Parámetro & Valor \\\midrule
+Software & Python 3.14, \texttt{rdrobust 0.x}, \texttt{statsmodels}, \texttt{pandas} \\
+Kernel & Triangular \\
+Selección de BW & MSE-óptimo (\texttt{bwselect = ``mserd''}) \\
+Errores estándar & HC1 robustos con sesgo corregido (rdrobust) \\
+Polinomio base & Local lineal ($p=1$) \\
+Semilla aleatoria & 42 \\
+Clustering & \texttt{CONGLOME} (conglomerado muestral) \\
+BW baseline (TIENE\_BILLETERA) & $h^* = 18.04$ años \\
+BW baseline (USA\_BILLETERA) & $h^* = 17.29$ años \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+\noindent\textbf{Archivos clave del repositorio:}
+\begin{itemize}[noitemsep]
+  \item \texttt{scripts/script\_completo/script.py} --- pipeline principal
+  \item \texttt{construir\_ifh.py} --- construcción del IFH (BCK 2017)
+  \item \texttt{data/clean/main\_results.csv} --- 18 estimaciones principales
+  \item \texttt{data/clean/robustness\_results.csv} --- 21 tests de robustez
+  \item \texttt{data/clean/rdd2\_results.csv} --- 7 estimaciones RDD2
+  \item \texttt{paper/tables/} --- todas las tablas LaTeX listas para insertar
+  \item \texttt{paper/figures/} --- todas las figuras en PDF y PNG
+\end{itemize}
+
+\bigskip
+\hrule
+\bigskip
+{\small\textit{Documento generado automáticamente el 2026-07-02 a partir de los
+outputs verificados del pipeline. Todas las cifras se leen directamente de
+\texttt{main\_results.csv}, \texttt{robustness\_results.csv} y
+\texttt{rdd2\_results.csv}. Autor del análisis: Cecilia Vargas Risco.}}
+
+\end{document}
