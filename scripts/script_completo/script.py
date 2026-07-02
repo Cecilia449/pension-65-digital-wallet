@@ -509,7 +509,7 @@ TREATMENT_VAR = ""
 OUTCOME_VARS = ["TIENE_BILLETERA", "USA_BILLETERA"]
 CLUSTER_VAR = "DPTO"
 TIME_VAR = None
-COVARIATES = ["INTERNET_HOGAR", "SMARTPHONE", "POBREZA", "INGRESO_PC", "NIVEL_EDUCATIVO"]
+COVARIATES = ["INTERNET_HOGAR", "SMARTPHONE", "INGRESO_PC", "NIVEL_EDUCATIVO"]
 PLACEBO_OUTCOMES = ["INTERNET_HOGAR", "SMARTPHONE"]
 
 
@@ -617,10 +617,43 @@ def phase_2_clean():
         pd.to_numeric(main_dataset["POBREZA"], errors="coerce").isin([1, 2])
     ).astype(int) if "POBREZA" in main_dataset.columns else 0
 
+    # SAMPLE_FLAG_D — elegibilidad IFH (Bernal, Carpio y Klein 2017)
+    # A diferencia de POBREZA (monetaria, post-tratamiento), el IFH se basa en
+    # características predeterminadas de vivienda y no es endógeno al programa.
+    # ELEGIBLE_SIS = IFH <= UMBRAL AND gasto_agua <= 20 AND gasto_electr <= 25.
+    _IFH_CSV   = DATA_DIR / "ifh_2024.csv"
+    _CLEAN_CSV = DATA_DIR / "enaho_2024_clean.csv"
+    if _IFH_CSV.exists() and _CLEAN_CSV.exists():
+        _keys = pd.read_csv(
+            _CLEAN_CSV,
+            usecols=["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"],
+            dtype=str
+        )
+        _ifh = pd.read_csv(
+            _IFH_CSV,
+            usecols=["IFH", "UMBRAL", "ELEGIBLE_IFH", "ELEGIBLE_SIS"]
+        )
+        _ifh_keys = pd.concat(
+            [_keys.reset_index(drop=True), _ifh.reset_index(drop=True)], axis=1
+        )
+        for _c in ["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"]:
+            main_dataset[_c] = main_dataset[_c].astype(str)
+        main_dataset = main_dataset.merge(
+            _ifh_keys, on=["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"], how="left"
+        )
+        main_dataset["SAMPLE_FLAG_D_ELEGIBLE_SIS"] = (
+            main_dataset["ELEGIBLE_SIS"].fillna(0).astype(int)
+        )
+        print("  IFH (BCK 2017) mergeado correctamente.")
+    else:
+        main_dataset["SAMPLE_FLAG_D_ELEGIBLE_SIS"] = 0
+        print("  ADVERTENCIA: ifh_2024.csv no encontrado — SAMPLE_FLAG_D = 0.")
+
     print(f"\nmain_dataset (muestra completa con SAMPLE_FLAG): N = {len(main_dataset):,}")
     print(f"  SAMPLE A (full):              {main_dataset['SAMPLE_FLAG_A_FULL'].sum():,}")
     print(f"  SAMPLE B (POBREZA=1):         {main_dataset['SAMPLE_FLAG_B_POBREZA_EXT'].sum():,}")
     print(f"  SAMPLE C (POBREZA in {{1,2}}): {main_dataset['SAMPLE_FLAG_C_POBREZA_POOR'].sum():,}")
+    print(f"  SAMPLE D (ELEGIBLE_SIS=1):    {main_dataset['SAMPLE_FLAG_D_ELEGIBLE_SIS'].sum():,}")
 
     if "RECIBE_P65_PERSONA" in main_dataset.columns:
         recep_total = main_dataset["RECIBE_P65_PERSONA"].sum()
@@ -629,9 +662,12 @@ def phase_2_clean():
                        (main_dataset["SAMPLE_FLAG_B_POBREZA_EXT"] == 1)).sum()
             recep_C = ((main_dataset["RECIBE_P65_PERSONA"] == 1) &
                        (main_dataset["SAMPLE_FLAG_C_POBREZA_POOR"] == 1)).sum()
-            print(f"\n  Receptores P65 totales:      {recep_total:,}")
-            print(f"    en SAMPLE B (POBREZA=1):  {recep_B:,} ({recep_B/recep_total*100:.1f}%)")
-            print(f"    en SAMPLE C (POBREZA<=2): {recep_C:,} ({recep_C/recep_total*100:.1f}%)")
+            recep_D = ((main_dataset["RECIBE_P65_PERSONA"] == 1) &
+                       (main_dataset["SAMPLE_FLAG_D_ELEGIBLE_SIS"] == 1)).sum()
+            print(f"\n  Receptores P65 totales:          {recep_total:,}")
+            print(f"    en SAMPLE B (POBREZA=1):       {recep_B:,} ({recep_B/recep_total*100:.1f}%)")
+            print(f"    en SAMPLE C (POBREZA<=2):      {recep_C:,} ({recep_C/recep_total*100:.1f}%)")
+            print(f"    en SAMPLE D (ELEGIBLE_SIS=1):  {recep_D:,} ({recep_D/recep_total*100:.1f}%)")
 
     main_dataset.to_csv(PATHS["main_dataset"], index=False)
     print(f"Saved: {PATHS['main_dataset']}")
@@ -689,7 +725,7 @@ def _safe_scalar(obj, idx=0):
         return np.nan
 
 
-def _run_rdd_rdrobust(y, x, cluster=None, covs=None, h=None):
+def _run_rdd_rdrobust(y, x, cluster=None, covs=None, h=None, fuzzy=None):
     kwargs = dict(y=y, x=x, kernel="triangular", bwselect="mserd")
     if cluster is not None:
         kwargs["cluster"] = cluster
@@ -698,6 +734,8 @@ def _run_rdd_rdrobust(y, x, cluster=None, covs=None, h=None):
     if h is not None:
         kwargs["h"] = h
         del kwargs["bwselect"]
+    if fuzzy is not None:
+        kwargs["fuzzy"] = fuzzy
 
     rd = rdrobust(**kwargs)
 
@@ -733,7 +771,7 @@ def _run_rdd_rdrobust(y, x, cluster=None, covs=None, h=None):
         "ci_lower": ci_lower, "ci_upper": ci_upper,
         "bandwidth": bandwidth,
         "N_left": n_left, "N_right": n_right, "N_eff": n_left + n_right,
-        "method": "rdrobust",
+        "method": "rdrobust_fuzzy" if fuzzy is not None else "rdrobust",
     }
 
 
@@ -765,12 +803,16 @@ def _run_rdd_statsmodels(y, x, cluster=None, h=None):
         return None
 
 
-def run_rdd(df, outcome, covariates=None, h=None, label="baseline"):
+def run_rdd(df, outcome, covariates=None, h=None, label="baseline", fuzzy_col=None):
     """RDD con fallback automático. Siempre devuelve dict completo."""
-    sub = df.dropna(subset=[outcome, RUNNING_VAR]).copy()
+    drop_cols = [outcome, RUNNING_VAR]
+    if fuzzy_col and fuzzy_col in df.columns:
+        drop_cols.append(fuzzy_col)
+    sub = df.dropna(subset=drop_cols).copy()
     y = sub[outcome].values
     x = sub[RUNNING_VAR].values
     cluster = sub[CLUSTER_VAR].values if CLUSTER_VAR in sub.columns else None
+    fuzzy = sub[fuzzy_col].values if fuzzy_col and fuzzy_col in sub.columns else None
 
     cov_matrix = None
     if covariates:
@@ -801,7 +843,7 @@ def run_rdd(df, outcome, covariates=None, h=None, label="baseline"):
 
     if RDROBUST_OK:
         try:
-            res = _run_rdd_rdrobust(y, x, cluster=cluster, covs=cov_matrix, h=h)
+            res = _run_rdd_rdrobust(y, x, cluster=cluster, covs=cov_matrix, h=h, fuzzy=fuzzy)
             result.update(res)
             return result
         except Exception as e:
@@ -846,6 +888,18 @@ def phase_3_main():
             all_results.append(res_cov)
             print(f"    [MAIN_covariates] est={res_cov['estimate']:.4f}  SE={res_cov['se_robust']:.4f}")
 
+        if "RECIBE_P65_PERSONA" in df_full.columns and RDROBUST_OK:
+            res_fuzzy = run_rdd(df_full, outcome,
+                                fuzzy_col="RECIBE_P65_PERSONA",
+                                label="MAIN_fuzzy")
+            all_results.append(res_fuzzy)
+            print(f"    [MAIN_fuzzy] est={res_fuzzy['estimate']:.4f}  "
+                  f"SE={res_fuzzy['se_robust']:.4f}  "
+                  f"BW={res_fuzzy['bandwidth']:.3f}  N_eff={res_fuzzy['N_eff']}  "
+                  f"Method={res_fuzzy['method']}")
+        else:
+            print("    [MAIN_fuzzy] rdrobust no disponible o RECIBE_P65_PERSONA ausente. Saltando.")
+
         if "DPTO" in df_full.columns:
             dpto_dummies = pd.get_dummies(
                 df_full["DPTO"].astype(str), prefix="DPTO", drop_first=True
@@ -863,6 +917,50 @@ def phase_3_main():
             all_results.append(res_dpto)
             print(f"    [MAIN_dpto_fe] est={res_dpto['estimate']:.4f}  "
                   f"SE={res_dpto['se_robust']:.4f}  Method={res_dpto['method']}")
+
+    # ── BLOQUE F_SAMPLE: RDD edad restringido a ELEGIBLE_SIS=1 (IFH BCK 2017) ──
+    # Restricción de muestra correcta para el programa Pensión 65: el SISFOH usa
+    # un proxy means test sobre características predeterminadas de vivienda, no
+    # pobreza monetaria. ELEGIBLE_SIS=1 identifica hogares bajo el umbral IFH por
+    # departamento (Tabla A.10, Bernal, Carpio y Klein 2017).
+    print("\n── BLOQUE F_SAMPLE: RDD edad — muestra ELEGIBLE_SIS=1 (IFH BCK 2017) ──")
+    if "SAMPLE_FLAG_D_ELEGIBLE_SIS" not in df_full.columns:
+        print("  ADVERTENCIA: SAMPLE_FLAG_D_ELEGIBLE_SIS no encontrada en df_full. "
+              "Re-ejecutar phase_2_clean() para regenerar enaho_rdd_full.csv.")
+    else:
+        df_ifh = df_full[df_full["SAMPLE_FLAG_D_ELEGIBLE_SIS"] == 1].copy()
+        print(f"  Muestra ELEGIBLE_SIS=1: N = {len(df_ifh):,}")
+        EP_COVARIATES_IFH = [c for c in EP_COVARIATES if c in df_ifh.columns]
+
+        for outcome in outcomes_full:
+            print(f"\n  Outcome: {outcome}")
+            sub = df_ifh.dropna(subset=[RUNNING_VAR, outcome]).copy()
+            if len(sub) < 100:
+                print(f"    N={len(sub):,} insuficiente. Saltando.")
+                continue
+
+            dentro = sub[sub[RUNNING_VAR].abs() <= 14.24]
+            n_bw_b = int((dentro[RUNNING_VAR] < 0).sum())
+            n_bw_a = int((dentro[RUNNING_VAR] >= 0).sum())
+            print(f"    Dentro del BW ±14.24: debajo={n_bw_b}, encima={n_bw_a}")
+            if n_bw_b < 100 or n_bw_a < 100:
+                print(f"    ADVERTENCIA: bajo poder estadístico (N<100 en un lado).")
+
+            res_ifh = run_rdd(sub, outcome, label="IFH_sample_baseline")
+            res_ifh["low_power"] = (n_bw_b < 100 or n_bw_a < 100)
+            all_results.append(res_ifh)
+            print(f"    [IFH_sample_baseline] est={res_ifh['estimate']:.4f}  "
+                  f"SE={res_ifh['se_robust']:.4f}  "
+                  f"BW={res_ifh['bandwidth']:.3f}  N_eff={res_ifh['N_eff']}")
+
+            if EP_COVARIATES_IFH:
+                res_ifh_cov = run_rdd(sub, outcome,
+                                      covariates=EP_COVARIATES_IFH,
+                                      label="IFH_sample_covariates")
+                res_ifh_cov["low_power"] = (n_bw_b < 100 or n_bw_a < 100)
+                all_results.append(res_ifh_cov)
+                print(f"    [IFH_sample_covariates] est={res_ifh_cov['estimate']:.4f}  "
+                      f"SE={res_ifh_cov['se_robust']:.4f}")
 
     # ── BLOQUE B: extrema pobreza como heterogeneidad ─────────────────────────
     print("\n── BLOQUE B: extrema pobreza (df_main, heterogeneidad) ──")
@@ -1012,176 +1110,86 @@ def phase_3_main():
 # ════════════════════════════════════════════════════════════════════════════
 def phase_3b_bloque_f():
     print("\n" + "=" * 70)
-    print("BLOQUE F — RDD2: Proxy SISFOH como running variable")
+    print("BLOQUE F — RDD2: IFH Bernal-Carpio-Klein 2017 como running variable")
     print("=" * 70)
 
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    try:
-        from sklearn.preprocessing import StandardScaler
-        from sklearn.decomposition import PCA
-    except ImportError:
-        print("  ADVERTENCIA: scikit-learn no disponible. Saltando BLOQUE F.")
+    IFH_CSV   = DATA_DIR / "ifh_2024.csv"
+    CLEAN_CSV = DATA_DIR / "enaho_2024_clean.csv"
+
+    if not IFH_CSV.exists():
+        print("  ERROR: ifh_2024.csv no encontrado. Ejecutar construir_ifh.py primero.")
+        return
+    if not CLEAN_CSV.exists():
+        print("  ERROR: enaho_2024_clean.csv no encontrado.")
         return
 
+    # ── PASO 1: Cargar IFH (Bernal, Carpio y Klein 2017) ─────────────────
+    print(f"\n── PASO 1: Cargar IFH (Bernal, Carpio y Klein 2017) ──")
     df_full = pd.read_csv(PATHS["clean_data_full"])
 
-    # ── PASO 1: Filtrar adultos mayores (EDAD >= 65) ──────────────────────
-    edad_col = RUNNING_VAR_RAW  # "EDAD"
+    # Si phase_2_clean ya incluyó las columnas IFH en enaho_rdd_full.csv,
+    # no hacemos merge de nuevo (evita conflicto IFH_x / IFH_y).
+    if "IFH" not in df_full.columns:
+        keys_clean = pd.read_csv(
+            CLEAN_CSV,
+            usecols=["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"],
+            dtype=str
+        )
+        ifh_vals = pd.read_csv(
+            IFH_CSV,
+            usecols=["IFH", "IFH_RAW", "UMBRAL", "ELEGIBLE_IFH", "ELEGIBLE_SIS"]
+        )
+        ifh_with_keys = pd.concat(
+            [keys_clean.reset_index(drop=True), ifh_vals.reset_index(drop=True)],
+            axis=1
+        )
+        for col in ["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"]:
+            df_full[col] = df_full[col].astype(str)
+        df_full = df_full.merge(
+            ifh_with_keys,
+            on=["CONGLOME", "VIVIENDA", "HOGAR", "CODPERSO"],
+            how="left"
+        )
+        print("  IFH cargado vía merge posicional.")
+    else:
+        print("  IFH ya presente en enaho_rdd_full.csv (cargado directamente).")
+
+    print(f"  Observaciones en df_full:            {len(df_full):,}")
+    print(f"  Con IFH no nulo:                     {df_full['IFH'].notna().sum():,}")
+    print(f"  ELEGIBLE_SIS=1 (toda la muestra):    "
+          f"{int(df_full['ELEGIBLE_SIS'].fillna(0).sum()):,}")
+
+    edad_col = RUNNING_VAR_RAW
     df_full[edad_col] = pd.to_numeric(df_full[edad_col], errors="coerce")
     df_mayores = df_full[df_full[edad_col] >= 65].copy().reset_index(drop=True)
-    print(f"\n── PASO 1: Construir proxy SISFOH ──")
-    print(f"  Adultos mayores (EDAD>=65): {len(df_mayores):,}")
+    print(f"  Adultos mayores (EDAD>=65):          {len(df_mayores):,}")
+    print(f"    Con IFH no nulo:                   {df_mayores['IFH'].notna().sum():,}")
+    print(f"    ELEGIBLE_SIS=1:                    "
+          f"{int(df_mayores['ELEGIBLE_SIS'].fillna(0).sum()):,}")
 
-    # ── PASO 1a: Construir HACINAMIENTO si no viene de Fase 1 ─────────────
-    # HACINAMIENTO = miembros del hogar / número de cuartos
-    # Usamos P104 (cuartos) y MIEPERHO (miembros), ambos verificados en ENAHO 2024
-    cuartos_col  = next((c for c in ("P104", "CUARTOS") if c in df_mayores.columns), None)
-    mieperho_col = "MIEPERHO" if "MIEPERHO" in df_mayores.columns else None
+    # ── PASO 2: Definir running variable IFH centrada en umbral ──────────
+    print("\n── PASO 2: Definir running variable IFH ──")
+    # running_ifh = IFH - UMBRAL  (umbral varía por departamento, Tabla A.10 BCK)
+    # Tratamiento conceptual: IFH <= UMBRAL → elegible SISFOH (running_ifh <= 0)
+    df_mayores["running_ifh"] = (
+        pd.to_numeric(df_mayores["IFH"],    errors="coerce") -
+        pd.to_numeric(df_mayores["UMBRAL"], errors="coerce")
+    )
+    df_mayores["treat_ifh"] = (df_mayores["running_ifh"] <= 0).astype(int)
 
-    if cuartos_col and mieperho_col:
-        cuartos  = pd.to_numeric(df_mayores[cuartos_col],  errors="coerce").replace(0, np.nan)
-        mieperho = pd.to_numeric(df_mayores[mieperho_col], errors="coerce")
-        df_mayores["HACINAMIENTO"] = mieperho / cuartos
-        print(f"  HACINAMIENTO construida: media={df_mayores['HACINAMIENTO'].mean():.2f}, "
-              f"mediana={df_mayores['HACINAMIENTO'].median():.2f}")
-    else:
-        df_mayores["HACINAMIENTO"] = np.nan
-        print(f"  ADVERTENCIA: HACINAMIENTO no pudo construirse "
-              f"(cuartos={cuartos_col}, mieperho={mieperho_col}).")
-
-    # ── Variables PCA — aliases verificados en ENAHO 2024 ─────────────────
-    # Cada entrada: nombre_canónico → lista de aliases en orden de preferencia
-    # La exploración empírica confirmó los aliases correctos para 2024.
-    VAR_CANDIDATES = {
-        # Vivienda — Filmer & Pritchett (2001)
-        "PARED":        ["P102", "PARED"],          # material paredes
-        "PISO":         ["P103", "PISO"],            # material piso
-        "ABASTAGUADOM": ["P110", "ABASTAGUADOM"],    # agua
-        "SERVSANIT":    ["P111A", "SERVSANIT"],      # saneamiento (alias 2024)
-        "ALUMBRADO":    ["P112A", "ALUMBRADO"],      # alumbrado (alias 2024)
-        "COMBUSTIBLE":  ["P113A", "COMBUSTIBLE"],    # combustible (alias 2024)
-        "HACINAMIENTO": ["HACINAMIENTO"],            # construida arriba
-        # Bienes durables — construidos en Fase 1 desde M18 formato long
-        "REFRIGERADOR": ["REFRIGERADOR"],            # P612N=4
-        "TIENE_TV":     ["TIENE_TV"],                # P612N=2
-        "SMARTPHONE":   ["SMARTPHONE"],              # P612N=10
-    }
-
-    print("\n  Verificando variables para PCA:")
-    pca_cols = {}
-    for canon, candidates in VAR_CANDIDATES.items():
-        found = next((c for c in candidates if c in df_mayores.columns), None)
-        if found:
-            pca_cols[canon] = found
-            n_valid = df_mayores[found].notna().sum()
-            pct_valid = 100 * n_valid / len(df_mayores)
-            print(f"    {canon:<15}: encontrada como '{found}' "
-                  f"(N válidos={n_valid:,}, {pct_valid:.1f}%)")
-        else:
-            print(f"    {canon:<15}: ADVERTENCIA — no encontrada "
-                  f"(candidatas: {candidates}). Se omite del PCA.")
-
-    if len(pca_cols) < 3:
-        print("  ADVERTENCIA: menos de 3 variables PCA disponibles. Saltando BLOQUE F.")
-        return
-
-    print(f"\n  Total variables que entran al PCA: {len(pca_cols)}")
-
-    # ── Construir matriz para PCA ─────────────────────────────────────────
-    pca_data = df_mayores[[v for v in pca_cols.values()]].copy()
-    pca_data.columns = list(pca_cols.keys())
-    pca_data = pca_data.apply(pd.to_numeric, errors="coerce")
-
-    # Imputar NaN con mediana por columna (imputación conservadora)
-    for col in pca_data.columns:
-        n_miss = pca_data[col].isna().sum()
-        if n_miss > 0:
-            med = pca_data[col].median()
-            pca_data[col] = pca_data[col].fillna(med)
-            print(f"    Imputados {n_miss:,} NaN en {col} con mediana={med:.2f}")
-
-    print(f"\n  Filas adultos mayores: {len(pca_data):,}")
-    print(f"  Variables PCA finales ({len(pca_cols)}): {list(pca_cols.keys())}")
-
-    # ── PCA — 1 componente principal ──────────────────────────────────────
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(pca_data.values)
-    pca_model = PCA(n_components=min(3, len(pca_cols)), random_state=RANDOM_SEED)
-    components = pca_model.fit_transform(X_scaled)
-    pc1 = components[:, 0]
-
-    var_explained = pca_model.explained_variance_ratio_
-    print(f"\n  Varianza explicada:")
-    for i, ve in enumerate(var_explained):
-        print(f"    PC{i+1}: {ve:.1%}")
-
-    # Cargas del PC1 — útil para verificar que el índice tenga sentido
-    loadings = pd.Series(pca_model.components_[0], index=list(pca_cols.keys()))
-    print(f"\n  Cargas del PC1 (loadings):")
-    for var, load in loadings.sort_values(key=abs, ascending=False).items():
-        direction = "↑pobre" if load > 0 else "↓pobre"
-        print(f"    {var:<15}: {load:+.3f}  ({direction})")
-
-    # Orientar PC1: valores más altos = más pobre
-    # Verificar con POBREZA: hogares con POBREZA==1 deben tener PC1 más alto
-    if "POBREZA" in df_mayores.columns:
-        pob_num = pd.to_numeric(df_mayores["POBREZA"], errors="coerce")
-        mean_ep = float(pd.Series(pc1)[pob_num == 1].mean()) if (pob_num == 1).any() else np.nan
-        mean_np = float(pd.Series(pc1)[pob_num >= 2].mean()) if (pob_num >= 2).any() else np.nan
-        if not np.isnan(mean_ep) and not np.isnan(mean_np):
-            print(f"\n  Verificación de orientación:")
-            print(f"    Media PC1 (POBREZA=1, extrema pobreza): {mean_ep:.3f}")
-            print(f"    Media PC1 (POBREZA>=2, no extrema):     {mean_np:.3f}")
-            if mean_ep < mean_np:
-                pc1 = -pc1
-                print("    → PC1 invertido (extrema pobreza tenía valores menores; corregido).")
-            else:
-                print("    → Orientación correcta (extrema pobreza ya tiene valores mayores).")
-        corr_pob = pd.Series(pc1).corr(pob_num.fillna(pob_num.median()))
-        print(f"  Correlación SISFOH_PROXY con POBREZA: {corr_pob:.3f}")
-        if abs(corr_pob) < 0.2:
-            print("  ADVERTENCIA: correlación baja con POBREZA — revisar variables del PCA.")
-    else:
-        print("  POBREZA no disponible para verificar orientación del PCA.")
-
-    df_mayores["SISFOH_PROXY"] = pc1
-
-    # ── PASO 2: Definir cutoff SISFOH_PROXY ──────────────────────────────
-    print("\n── PASO 2: Definir cutoff SISFOH_PROXY ──")
-    # Estrategia: umbral entre la distribución de POBREZA=1 y POBREZA=2
-    # entre adultos mayores. Esto aproxima el corte que usa el MIDIS para
-    # clasificar extrema pobreza según el proxy means test del SISFOH.
-    if "POBREZA" in df_mayores.columns:
-        pob = pd.to_numeric(df_mayores["POBREZA"], errors="coerce")
-        proxy_ep  = df_mayores.loc[pob == 1, "SISFOH_PROXY"].dropna()
-        proxy_nep = df_mayores.loc[pob == 2, "SISFOH_PROXY"].dropna()
-        print(f"  N adultos mayores POBREZA=1 (extrema):  {len(proxy_ep):,}")
-        print(f"  N adultos mayores POBREZA=2 (pobre):    {len(proxy_nep):,}")
-        if len(proxy_ep) > 10 and len(proxy_nep) > 10:
-            # Cutoff = promedio entre el máximo de POBREZA=2 y el mínimo de POBREZA=1
-            cutoff_sisfoh = (proxy_nep.max() + proxy_ep.min()) / 2
-            print(f"  max(POBREZA=2)={proxy_nep.max():.4f}, "
-                  f"min(POBREZA=1)={proxy_ep.min():.4f}")
-            print(f"  → Cutoff = promedio de ambos extremos")
-        else:
-            cutoff_sisfoh = df_mayores["SISFOH_PROXY"].median()
-            print("  Cutoff calculado como mediana (grupos muy pequeños).")
-    else:
-        cutoff_sisfoh = df_mayores["SISFOH_PROXY"].median()
-        print("  POBREZA no disponible. Cutoff = mediana de SISFOH_PROXY.")
-
-    print(f"  CUTOFF_SISFOH = {cutoff_sisfoh:.4f}")
-
-    df_mayores["running_sisfoh"] = df_mayores["SISFOH_PROXY"] - cutoff_sisfoh
-    df_mayores["treat_sisfoh"]   = (df_mayores["running_sisfoh"] >= 0).astype(int)
-
-    n_below = int((df_mayores["running_sisfoh"] < 0).sum())
-    n_above = int((df_mayores["running_sisfoh"] >= 0).sum())
-    print(f"  Debajo del corte (no extrema pobreza): {n_below:,}")
-    print(f"  Encima del corte (extrema pobreza):    {n_above:,}")
+    n_below = int((df_mayores["running_ifh"] < 0).sum())
+    n_above = int((df_mayores["running_ifh"] >= 0).sum())
+    print(f"  Elegibles IFH (running_ifh <= 0): {n_below:,}")
+    print(f"  No elegibles  (running_ifh >  0): {n_above:,}")
+    ifh_s = df_mayores["IFH"].dropna()
+    umb_s = df_mayores["UMBRAL"].dropna()
+    print(f"  IFH — media={ifh_s.mean():.2f}, std={ifh_s.std():.2f}")
+    print(f"  UMBRAL — media={umb_s.mean():.2f}, "
+          f"rango=[{umb_s.min():.0f}, {umb_s.max():.0f}]")
 
     # ── PASO 3: Estimar RDD2 ──────────────────────────────────────────────
     print("\n── PASO 3: Estimación RDD2 ──")
@@ -1193,26 +1201,26 @@ def phase_3b_bloque_f():
 
     # Remap columnas para que run_rdd() las encuentre con sus nombres globales
     df_rdd2 = df_mayores.copy()
-    df_rdd2[RUNNING_VAR] = df_rdd2["running_sisfoh"]
-    df_rdd2["treat"]     = df_rdd2["treat_sisfoh"]
+    df_rdd2[RUNNING_VAR] = df_rdd2["running_ifh"]
+    df_rdd2["treat"]     = df_rdd2["treat_ifh"]
 
     rdd2_results = []
     for outcome in [o for o in OUTCOME_VARS if o in df_rdd2.columns]:
         print(f"\n  Outcome: {outcome}")
 
-        sub = df_rdd2.dropna(subset=["running_sisfoh", outcome]).copy()
+        sub = df_rdd2.dropna(subset=["running_ifh", outcome]).copy()
         if len(sub) < 100:
             print(f"    Insuficiente muestra (N={len(sub)}). Saltando.")
             continue
 
         # Baseline sin covariables
-        res_b = run_rdd(sub, outcome, label="RDD2_SISFOH_baseline")
+        res_b = run_rdd(sub, outcome, label="RDD2_IFH_baseline")
         res_b["outcome"] = outcome
         rdd2_results.append(res_b)
 
         bw     = res_b.get("bandwidth", np.nan)
         n_eff  = res_b.get("N_eff", 0)
-        print(f"    [RDD2_SISFOH_baseline]    "
+        print(f"    [RDD2_IFH_baseline]    "
               f"est={res_b['estimate']:.4f}  SE={res_b['se_robust']:.4f}")
         if not np.isnan(bw):
             print(f"    BW={bw:.3f}  N_eff={n_eff}  Method={res_b['method']}")
@@ -1221,48 +1229,47 @@ def phase_3b_bloque_f():
         if EP_COVARIATES_F:
             res_cov = run_rdd(sub, outcome,
                               covariates=EP_COVARIATES_F,
-                              label="RDD2_SISFOH_covariates")
+                              label="RDD2_IFH_covariates")
             res_cov["outcome"] = outcome
             rdd2_results.append(res_cov)
-            print(f"    [RDD2_SISFOH_covariates]  "
+            print(f"    [RDD2_IFH_covariates]  "
                   f"est={res_cov['estimate']:.4f}  SE={res_cov['se_robust']:.4f}")
 
         # Reporte de observaciones a cada lado del corte dentro del bandwidth
         if not np.isnan(bw):
-            in_bw      = sub[sub["running_sisfoh"].abs() <= bw]
-            n_bw_below = int((in_bw["running_sisfoh"] < 0).sum())
-            n_bw_above = int((in_bw["running_sisfoh"] >= 0).sum())
+            in_bw      = sub[sub["running_ifh"].abs() <= bw]
+            n_bw_below = int((in_bw["running_ifh"] < 0).sum())
+            n_bw_above = int((in_bw["running_ifh"] >= 0).sum())
             print(f"    Dentro del BW ±{bw:.2f}: "
                   f"debajo={n_bw_below}, encima={n_bw_above}")
             if n_bw_below < 100 or n_bw_above < 100:
                 print(f"    ADVERTENCIA: bajo poder estadístico (N<100 en un lado).")
                 res_b["low_power"] = True
 
-            m_below = in_bw.loc[in_bw["running_sisfoh"] < 0, outcome].mean()
-            m_above = in_bw.loc[in_bw["running_sisfoh"] >= 0, outcome].mean()
+            m_below = in_bw.loc[in_bw["running_ifh"] < 0, outcome].mean()
+            m_above = in_bw.loc[in_bw["running_ifh"] >= 0, outcome].mean()
             print(f"    Media {outcome}: "
-                  f"debajo (no pobre)={m_below:.4f}, encima (pobre)={m_above:.4f}")
+                  f"debajo (elegible IFH)={m_below:.4f}, encima (no elegible)={m_above:.4f}")
 
     # ── PASO 4: Diagnósticos ──────────────────────────────────────────────
     print("\n── PASO 4: Diagnósticos RDD2 ──")
 
-    # 4.1 Gráfico de densidad del running variable SISFOH
+    # 4.1 Gráfico de densidad del running variable IFH
     fig, ax = plt.subplots(figsize=(8, 5))
-    valid_rs = df_mayores["running_sisfoh"].dropna()
-    window   = min(valid_rs.abs().quantile(0.95), 5)
+    valid_rs  = df_mayores["running_ifh"].dropna()
+    window    = min(valid_rs.abs().quantile(0.95), 50)
     plot_vals = valid_rs[valid_rs.abs() <= window]
     ax.hist(plot_vals[plot_vals < 0],  bins=40, color="#2166ac", alpha=0.7,
-            label="No extrema pobreza (proxy)")
+            label="Elegible SISFOH (IFH ≤ umbral)")
     ax.hist(plot_vals[plot_vals >= 0], bins=40, color="#b2182b", alpha=0.7,
-            label="Extrema pobreza (proxy)")
+            label="No elegible SISFOH (IFH > umbral)")
     ax.axvline(x=0, color="black", linestyle="--", linewidth=1.5,
-               label="Cutoff SISFOH proxy")
-    ax.set_xlabel("SISFOH_PROXY centrado en cutoff", fontsize=11)
+               label="Umbral IFH por departamento")
+    ax.set_xlabel("IFH centrado en umbral departamental (BCK 2017)", fontsize=11)
     ax.set_ylabel("Frecuencia", fontsize=11)
     ax.set_title(
-        "RDD2: Densidad del índice de bienestar proxy (adultos ≥65)\n"
-        f"PCA sobre {len(pca_cols)} variables ENAHO 2024 — "
-        f"PC1 explica {var_explained[0]:.1%} de la varianza",
+        "RDD2 (BCK IFH): Densidad del índice SISFOH (adultos ≥65)\n"
+        "Bernal, Carpio y Klein (2017), pesos Tabla A.8/A.9 — ENAHO 2024",
         fontsize=11
     )
     ax.legend(fontsize=9)
@@ -1273,20 +1280,22 @@ def phase_3b_bloque_f():
     plt.close(fig)
     print("  Guardado: figure_rdd2_density.png/.pdf")
 
-    # 4.2 RD plot: billetera digital vs índice SISFOH proxy
+    # 4.2 RD plot: billetera digital vs índice IFH BCK
     outcome_rdplot = "TIENE_BILLETERA"
     if outcome_rdplot in df_mayores.columns:
-        sub_plot  = df_mayores.dropna(
-            subset=["running_sisfoh", outcome_rdplot]
+        # Ventana ±30 puntos IFH (escala [0-100])
+        plot_window = 30
+        sub_plot = df_mayores.dropna(
+            subset=["running_ifh", outcome_rdplot]
         ).copy()
-        sub_plot  = sub_plot[sub_plot["running_sisfoh"].between(-3, 3)]
-        bin_width = 0.2
-        bins      = np.arange(-3, 3 + bin_width, bin_width)
+        sub_plot = sub_plot[sub_plot["running_ifh"].between(-plot_window, plot_window)]
+        bin_width = plot_window / 15
+        bins      = np.arange(-plot_window, plot_window + bin_width, bin_width)
         bin_centers, bin_means, bin_side = [], [], []
         for i in range(len(bins) - 1):
             lo, hi = bins[i], bins[i + 1]
-            mask   = (sub_plot["running_sisfoh"] >= lo) & \
-                     (sub_plot["running_sisfoh"] <  hi)
+            mask   = (sub_plot["running_ifh"] >= lo) & \
+                     (sub_plot["running_ifh"] <  hi)
             if mask.sum() >= 3:
                 bin_centers.append((lo + hi) / 2)
                 bin_means.append(sub_plot.loc[mask, outcome_rdplot].mean())
@@ -1300,21 +1309,21 @@ def phase_3b_bloque_f():
         left_m  = bin_side == "left"
         right_m = bin_side == "right"
         ax2.scatter(bin_centers[left_m],  bin_means[left_m],
-                    color="#2166ac", s=55, zorder=3, label="No extrema pobreza")
+                    color="#2166ac", s=55, zorder=3, label="Elegible SISFOH")
         ax2.scatter(bin_centers[right_m], bin_means[right_m],
-                    color="#b2182b", s=55, zorder=3, label="Extrema pobreza")
+                    color="#b2182b", s=55, zorder=3, label="No elegible SISFOH")
 
         for mask_side, color in [(left_m, "#2166ac"), (right_m, "#b2182b")]:
             xs = sub_plot.loc[
-                sub_plot["running_sisfoh"] < 0
+                sub_plot["running_ifh"] < 0
                 if mask_side is left_m
-                else sub_plot["running_sisfoh"] >= 0,
-                "running_sisfoh"
+                else sub_plot["running_ifh"] >= 0,
+                "running_ifh"
             ].values
             ys = sub_plot.loc[
-                sub_plot["running_sisfoh"] < 0
+                sub_plot["running_ifh"] < 0
                 if mask_side is left_m
-                else sub_plot["running_sisfoh"] >= 0,
+                else sub_plot["running_ifh"] >= 0,
                 outcome_rdplot
             ].values
             if len(xs) > 5:
@@ -1324,15 +1333,15 @@ def phase_3b_bloque_f():
                          color=color, linewidth=2)
 
         ax2.axvline(x=0, color="black", linestyle="--",
-                    linewidth=1.3, alpha=0.8, label="Cutoff SISFOH")
-        ax2.set_xlim(-3, 3)
+                    linewidth=1.3, alpha=0.8, label="Umbral IFH por departamento")
+        ax2.set_xlim(-plot_window, plot_window)
         ax2.set_xlabel(
-            "SISFOH_PROXY centrado en cutoff (índice de bienestar)", fontsize=11
+            "IFH centrado en umbral departamental (BCK 2017, escala 0–100)", fontsize=11
         )
         ax2.set_ylabel("Proporción con billetera digital", fontsize=11)
         ax2.set_title(
-            "RDD2: Digital Wallet Ownership by SISFOH Welfare Index\n"
-            "(Adults 65+, following Bando, Galiani and Gertler 2020)",
+            "RDD2: Adopción de billetera digital vs. índice SISFOH BCK\n"
+            "(Adultos ≥65, siguiendo Bando, Galiani y Gertler 2020)",
             fontsize=11
         )
         ax2.legend(fontsize=9)
@@ -1343,16 +1352,16 @@ def phase_3b_bloque_f():
         plt.close(fig2)
         print("  Guardado: figure_rdd2_rdplot.png/.pdf")
 
-    # 4.3 Balance de covariables en el nuevo cutoff
-    print("\n  Balance de covariables en cutoff SISFOH_PROXY:")
+    # 4.3 Balance de covariables en el umbral IFH
+    print("\n  Balance de covariables en umbral IFH:")
     balance_covs = [c for c in ["INTERNET_HOGAR", "NIVEL_EDUCATIVO", "INGRESO_PC"]
                     if c in df_rdd2.columns]
     balance_results = []
     for cov in balance_covs:
-        sub_cov = df_rdd2.dropna(subset=["running_sisfoh", cov]).copy()
+        sub_cov = df_rdd2.dropna(subset=["running_ifh", cov]).copy()
         if len(sub_cov) < 50:
             continue
-        res_bal = run_rdd(sub_cov, cov, label=f"RDD2_SISFOH_balance_{cov}")
+        res_bal = run_rdd(sub_cov, cov, label=f"RDD2_IFH_balance_{cov}")
         res_bal["outcome"] = cov
         balance_results.append(res_bal)
         sig = "*" if abs(res_bal["estimate"]) > 1.96 * res_bal["se_robust"] else ""
@@ -1372,17 +1381,21 @@ def phase_3b_bloque_f():
     else:
         print("  ADVERTENCIA: no hay resultados RDD2 para guardar.")
 
-    # 4.5 Resumen del índice construido
-    print("\n── RESUMEN ÍNDICE SISFOH_PROXY ──")
-    proxy = df_mayores["SISFOH_PROXY"]
-    print(f"  N adultos mayores: {proxy.notna().sum():,}")
-    print(f"  Media:   {proxy.mean():.4f}")
-    print(f"  Std:     {proxy.std():.4f}")
-    print(f"  Min:     {proxy.min():.4f}")
-    print(f"  Max:     {proxy.max():.4f}")
-    print(f"  Cutoff:  {cutoff_sisfoh:.4f}")
-    print(f"  Variables usadas en PCA: {list(pca_cols.keys())}")
-    print(f"  Varianza explicada PC1:  {var_explained[0]:.1%}")
+    # 4.5 Resumen del índice IFH BCK
+    print("\n── RESUMEN ÍNDICE IFH (Bernal, Carpio y Klein 2017) ──")
+    ifh_col = df_mayores["IFH"]
+    print(f"  N adultos mayores con IFH: {ifh_col.notna().sum():,}")
+    print(f"  Media:   {ifh_col.mean():.2f}")
+    print(f"  Std:     {ifh_col.std():.2f}")
+    print(f"  Min:     {ifh_col.min():.2f}")
+    print(f"  Max:     {ifh_col.max():.2f}")
+    umb_col = df_mayores["UMBRAL"]
+    print(f"  UMBRAL — media={umb_col.mean():.2f}, "
+          f"rango=[{umb_col.min():.0f}, {umb_col.max():.0f}]")
+    print(f"  Elegibles IFH (IFH<=UMBRAL): "
+          f"{int(df_mayores['ELEGIBLE_IFH'].fillna(0).sum()):,}")
+    print(f"  ELEGIBLE_SIS (IFH+agua+electr): "
+          f"{int(df_mayores['ELEGIBLE_SIS'].fillna(0).sum()):,}")
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1431,22 +1444,19 @@ def phase_4_robustness():
 
             ax.hist(left_vals, bins=bin_edges, color="#2166ac", alpha=0.7,
                     edgecolor="white", linewidth=0.5,
-                    label="Below cutoff (age $<$ 65)")
+                    label="Bajo el umbral (edad $<$ 65)")
             ax.hist(right_vals, bins=bin_edges, color="#b2182b", alpha=0.7,
                     edgecolor="white", linewidth=0.5,
-                    label="Above cutoff (age $\\geq$ 65)")
+                    label="Sobre el umbral (edad $\\geq$ 65)")
             ax.axvline(x=0, color="black", linestyle="--", linewidth=1.2,
-                       alpha=0.8, label="Threshold (age 65)")
-            ax.set_xlabel("Age centered at 65 (years)", fontsize=12)
-            ax.set_ylabel("Frequency (number of individuals)", fontsize=12)
-            test_label = (f"McCrary density test: T $=$ {float(mccrary_pval):.2f}"
+                       alpha=0.8, label="Umbral (65 años)")
+            ax.set_xlabel("Edad centrada en 65 años", fontsize=12)
+            ax.set_ylabel("Frecuencia (número de individuos)", fontsize=12)
+            test_label = (f"Test de densidad - Cattaneo, Jansson y Ma (2018): T $=$ {float(mccrary_pval):.2f}"
                           if isinstance(mccrary_pval, (int, float))
                           and not np.isnan(mccrary_pval)
-                          else "McCrary density visualisation")
-            ax.set_title(
-                f"Density of Running Variable around Age-65 Cutoff\n({test_label})",
-                fontsize=12,
-            )
+                          else "Test de densidad - Cattaneo, Jansson y Ma (2018)")
+            ax.set_title(test_label, fontsize=12)
             ax.legend(loc="upper right", fontsize=10)
             ax.grid(True, alpha=0.3)
             plt.tight_layout()
@@ -2037,11 +2047,10 @@ def _make_figure1(df):
         print("  Insufficient data. Skipping.")
         return
 
-    h_approx = 2.0
-    x_range = h_approx * 2.5
+    x_range = 18.04
     mask = np.abs(x) <= x_range
     x_p, y_p = x[mask], y[mask]
-    n_bins = 15
+    n_bins = 25
 
     def bin_scatter(xv, yv, nbins):
         if len(xv) < nbins:
@@ -2063,24 +2072,27 @@ def _make_figure1(df):
     fig, ax = plt.subplots(figsize=(8, 5))
     if len(x_left) > 3:
         bx, by = bin_scatter(x_left, y_left, n_bins)
-        ax.scatter(bx, by, color="#2166ac", s=60, zorder=3, label="Below threshold")
+        ax.scatter(bx, by, color="#2166ac", s=60, zorder=3, label="Bajo el umbral")
         coeffs = np.polyfit(x_left, y_left, 1)
         xs = np.linspace(x_left.min(), 0, 100)
         ax.plot(xs, np.poly1d(coeffs)(xs), color="#2166ac", linewidth=2)
     if len(x_right) > 3:
         bx, by = bin_scatter(x_right, y_right, n_bins)
-        ax.scatter(bx, by, color="#b2182b", s=60, zorder=3, label="Above threshold")
+        ax.scatter(bx, by, color="#b2182b", s=60, zorder=3, label="Sobre el umbral")
         coeffs = np.polyfit(x_right, y_right, 1)
         xs = np.linspace(0, x_right.max(), 100)
         ax.plot(xs, np.poly1d(coeffs)(xs), color="#b2182b", linewidth=2)
     ax.axvline(x=0, color="black", linestyle="--", linewidth=1, alpha=0.7,
-               label="Threshold")
+               label="Umbral (65 años)")
     ax.set_xlim(-x_range, x_range)
-    ax.set_xlabel("Age centered at 65 (years)", fontsize=12)
-    ax.set_ylabel(PRIMARY_OUTCOME.replace("_", " ").title(), fontsize=12)
-    ax.set_title("RDD Plot: Digital Wallet Ownership by Age", fontsize=13)
+    ax.set_xlabel("Edad centrada en 65 años", fontsize=12)
+    ax.set_ylabel("Tiene Billetera", fontsize=12)
+    ax.set_title("Adopción de billeteras digitales por edad (ENAHO 2024)", fontsize=13)
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
+    ax.text(0.02, 0.97, "Ancho de banda óptimo: h = 18.04 años",
+            transform=ax.transAxes, fontsize=9, va="top",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.7))
     plt.tight_layout()
     for ext in ["png", "pdf"]:
         plt.savefig(FIGURES_DIR / f"figure_1_rdplot.{ext}",
@@ -2191,25 +2203,25 @@ def phase_5_output():
         _make_table3(robust)
         _make_table4(robust)
 
-    # BLOQUE F: tabla RDD2 SISFOH proxy
+    # BLOQUE F: tabla RDD2 IFH (Bernal, Carpio y Klein 2017)
     if PATHS["rdd2_results"].exists():
         rdd2_res = pd.read_csv(PATHS["rdd2_results"])
         _make_rdd_table(
             rdd2_res,
-            lambda s: str(s).startswith("RDD2_SISFOH_") and "balance" not in str(s),
-            ("RDD2: SISFOH Welfare Index as Running Variable "
-             "(Adults 65+, following Bando, Galiani and Gertler 2020)"),
-            "table_4_rdd2_sisfoh.tex",
-            (r"Running variable is a PCA-based proxy of the SISFOH welfare index "
-             r"constructed from ENAHO household characteristics (walls, floors, water, "
-             r"sanitation, electricity, smartphone, refrigerator, TV, per-capita income, "
-             r"overcrowding). Cutoff defined at the estimated threshold separating "
-             r"extreme-poor from non-extreme-poor households among adults aged 65 and above. "
-             r"This design replicates the identification strategy of Bando, Galiani and "
-             r"Gertler (2020) applied to digital wallet adoption as outcome."),
+            lambda s: str(s).startswith("RDD2_IFH_") and "balance" not in str(s),
+            ("RDD2: Índice de Focalización de Hogares (IFH) como running variable "
+             "(Adultos ≥65, siguiendo Bando, Galiani y Gertler 2020)"),
+            "table_4_rdd2_ifh.tex",
+            (r"La running variable es el Índice de Focalización de Hogares (IFH) de "
+             r"Bernal, Carpio y Klein (2017), construido con pesos de las Tablas A.8/A.9 "
+             r"del Apéndice F y estandarizado en [0--100] por departamento. "
+             r"El umbral varía por departamento según la Tabla A.10 (rango: 33--55). "
+             r"Muestra: adultos mayores (EDAD$\geq$65) en ENAHO 2024 con IFH no nulo "
+             r"(N=13{,}766). Este diseño replica la estrategia de identificación de "
+             r"Bando, Galiani y Gertler (2020) aplicada a la adopción de billetera digital."),
         )
     else:
-        print("  table_4_rdd2_sisfoh.tex: rdd2_results.csv no encontrado, saltando.")
+        print("  table_4_rdd2_ifh.tex: rdd2_results.csv no encontrado, saltando.")
 
     print()
     _make_figure1(df)
@@ -2266,7 +2278,7 @@ def main():
     print(f"  {TABLES_DIR / 'table_3_heterogeneity.tex'}    ← EP_het_ + MAIN_het_AREA_ + EP_descriptivo")
     print(f"  {TABLES_DIR / 'table_3_robustness.tex'}")
     print(f"  {TABLES_DIR / 'table_4_covariate_balance.tex'}")
-    print(f"  {TABLES_DIR / 'table_4_rdd2_sisfoh.tex'}    ← BLOQUE F: RDD2 proxy SISFOH")
+    print(f"  {TABLES_DIR / 'table_4_rdd2_ifh.tex'}    ← BLOQUE F: RDD2 IFH (BCK 2017)")
     print(f"  {TABLES_DIR / 'table_A1_ep_descriptivo.tex'} ← apéndice extrema pobreza")
     print(f"\n  [Datos BLOQUE F]")
     print(f"  {PATHS['rdd2_mayores']}")

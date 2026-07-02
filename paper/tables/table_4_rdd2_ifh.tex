@@ -1,0 +1,28 @@
+\begin{threeparttable}
+\begin{tabular}{l cc}
+\toprule
+\multicolumn{3}{c}{\textit{RDD2: Índice de Focalización de Hogares (IFH) como running variable (Adultos ≥65, siguiendo Bando, Galiani y Gertler 2020)}} \\
+\midrule
+  & TIENE\_BILLETERA & USA\_BILLETERA \\
+\midrule
+\addlinespace
+\multicolumn{3}{l}{\textit{RDD2\_IFH\_baseline}} \\
+  Estimate & 0.0280 & 0.0152 \\
+  SE (robust) & (0.0211) & (0.0236) \\
+  95\% CI & [-0.0133, 0.0694] & [-0.0310, 0.0614] \\
+  N / BW & 5{,}052 / 12.48 & 4{,}479 / 10.76 \\
+  Method & rdrobust & rdrobust \\
+\addlinespace
+\multicolumn{3}{l}{\textit{RDD2\_IFH\_covariates}} \\
+  Estimate & 0.0272 & 0.0108 \\
+  SE (robust) & (0.0184) & (0.0152) \\
+  95\% CI & [-0.0088, 0.0631] & [-0.0189, 0.0405] \\
+  N / BW & 4{,}653 / 11.52 & 4{,}505 / 11.03 \\
+  Method & rdrobust & rdrobust \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item \textit{Notes:} La running variable es el Índice de Focalización de Hogares (IFH) de Bernal, Carpio y Klein (2017), construido con pesos de las Tablas A.8/A.9 del Apéndice F y estandarizado en [0--100] por departamento. El umbral varía por departamento según la Tabla A.10 (rango: 33--55). Muestra: adultos mayores (EDAD$\geq$65) en ENAHO 2024 con IFH no nulo (N=13{,}766). Este diseño replica la estrategia de identificación de Bando, Galiani y Gertler (2020) aplicada a la adopción de billetera digital.
+\end{tablenotes}
+\end{threeparttable}
